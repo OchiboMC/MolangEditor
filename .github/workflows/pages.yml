@@ -1,0 +1,91 @@
+name: Update catalog and deploy Pages
+
+# Rebuilds molang_variables.json from Mojang/bedrock-samples every week and publishes the
+# site. Run it by hand from the Actions tab for the first deployment.
+on:
+  schedule:
+    - cron: '17 3 * * 1'   # Mondays 03:17 UTC (12:17 JST)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - tools/**
+      - .github/workflows/pages.yml
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # commit the refreshed catalog back to the repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Collect animation / controller catalog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # lifts the 60 requests/hour API limit
+        run: python tools/collect_bedrock_molang.py --refresh --out molang_variables.json
+
+      - name: Build site
+        run: |
+          mkdir -p _site/offline
+          cp index.html molang_variables.json _site/
+          touch _site/.nojekyll
+          python tools/embed_molang_catalog.py molang_variables.json index.html -o _site/offline/MoLang_Editor_Full.html
+
+      # Commit only when the content changed (the timestamp and source commit always differ).
+      - name: Commit catalog if it changed
+        continue-on-error: true   # e.g. protected branch: the deployment below still uses the fresh file
+        run: |
+          changed=$(python - <<'PY'
+          import json, subprocess
+          def load(text):
+              data = json.loads(text)
+              for key in ('generated_at_utc', 'sources'):
+                  data.pop(key, None)
+              return data
+          try:
+              old = load(subprocess.check_output(['git', 'show', 'HEAD:molang_variables.json'],
+                                                 text=True, stderr=subprocess.DEVNULL))
+          except subprocess.CalledProcessError:
+              old = None
+          new = load(open('molang_variables.json', encoding='utf-8').read())
+          print('yes' if old != new else 'no')
+          PY
+          )
+          if [ "$changed" != "yes" ]; then
+            echo "Catalog content unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add molang_variables.json
+          git commit -m "Update MoLang catalog"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

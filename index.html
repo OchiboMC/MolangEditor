@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MoLang Editor — Minecraft Bedrock</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f7f7f7;
+  --surface: #ffffff;
+  --ink: #171717;
+  --sub: #636363;
+  --rule: #d7d7d7;
+  --rule-dark: #a9a9a9;
+  --editor: #191919;
+  --editor-ink: #e9edf4;
+  /* Syntax colors are intentionally limited to the editor. The site UI remains monochrome. */
+  --syntax-keyword: #c792ea;
+  --syntax-boolean: #f7a46b;
+  --syntax-number: #f4ad78;
+  --syntax-string: #a9db8e;
+  --syntax-math: #ffd479;
+  --syntax-query: #75c7ff;
+  --syntax-variable: #66dfbc;
+  --syntax-function: #e8d38a;
+  --syntax-member: #bed8fa;
+  --syntax-operator: #d4c2f4;
+  --syntax-punctuation: #abb6c5;
+  --syntax-comment: #94a0b0;
+  --syntax-error: #ff7185;
+  --mono: "Cascadia Code", "Consolas", "SFMono-Regular", Menlo, monospace;
+  --sans: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;color:var(--ink);background:var(--page);font-family:var(--sans);font-size:13px;line-height:1.55}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #171717;outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.42}
+.app{max-width:1536px;margin:auto;padding:0 40px 24px}
+.header{min-height:98px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--ink)}
+.brand{display:flex;align-items:center;gap:18px}
+.logo{display:grid;place-items:center;border:1px solid var(--ink);width:42px;height:42px;font:600 19px var(--mono);letter-spacing:-2px}
+h1{margin:0;font-size:23px;font-weight:650;letter-spacing:-.7px;line-height:1.3}
+.subtitle{font-size:11px;color:var(--sub);margin:5px 0 0}
+.header-meta{font:11px var(--mono);color:var(--sub);white-space:nowrap;letter-spacing:.4px}
+.header-meta b{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:8px}
+.intro{min-height:59px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--rule);font-size:12px;color:var(--sub)}
+.intro strong{color:var(--ink);font-weight:650}
+.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(345px,1fr);gap:24px;margin-top:23px;align-items:start}
+.panel{min-width:0;background:var(--surface);border:1px solid var(--rule)}
+.panel-head{padding:18px 20px;min-height:84px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule)}
+.panel-label{font:700 11px var(--mono);letter-spacing:1.2px;text-transform:uppercase}
+.panel-sub{font-size:11px;color:var(--sub);margin-top:7px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.btn{border:1px solid var(--rule-dark);border-radius:2px;background:var(--surface);color:var(--ink);padding:9px 12px;font-size:12px;line-height:1.4;font-weight:600;white-space:nowrap;transition:background .1s,border-color .1s}
+.btn:hover{background:#eee;border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:#3d3d3d}
+.btn.small{padding:7px 11px;font-size:11px}
+.btn.quiet{border-color:transparent;color:var(--sub)}
+.btn.quiet:hover{color:var(--ink);background:#eee}
+.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:11px 16px;border-bottom:1px solid #393939;background:var(--editor);color:#aaa}
+.select{padding:5px 25px 5px 7px;background:#252525;border:1px solid #575757;border-radius:2px;color:#f1f1f1;font-size:11px}
+.hint{font-size:11px;color:#aaa}
+.kbd{border:1px solid #595959;padding:1px 5px;font:10px var(--mono);color:#ddd}
+.editor-shell{display:flex;position:relative;background:var(--editor);height:min(65vh,680px);min-height:400px;overflow:hidden}
+.gutter{flex:0 0 56px;overflow:hidden;user-select:none;color:#777;border-right:1px solid #404040;text-align:right;font:13px/24px var(--mono)}
+.gutter-inner{padding:19px 12px 19px 0;white-space:pre}
+.code-stack{position:relative;min-width:0;flex:1;overflow:hidden}
+.highlight,.code-input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:19px 22px;border:0;background:none;white-space:pre;tab-size:2;font:13px/24px var(--mono);letter-spacing:0;word-spacing:0;overflow:auto;overflow-wrap:normal}
+.highlight{pointer-events:none;z-index:1;overflow:hidden;scrollbar-width:none;color:var(--editor-ink)}
+.highlight::-webkit-scrollbar{display:none}
+.code-input{z-index:2;resize:none;color:transparent;caret-color:white;-webkit-text-fill-color:transparent;scrollbar-color:#777 #222;outline:0!important}
+.code-input::selection{background:#7777;-webkit-text-fill-color:transparent}
+/* Language colors appear in the highlight layer; the textarea retains the caret/selection. */
+.highlight .keyword{color:var(--syntax-keyword);font-weight:700}
+.highlight .boolean{color:var(--syntax-boolean)}
+.highlight .num{color:var(--syntax-number)}
+.highlight .str{color:var(--syntax-string)}
+.highlight .scope{color:var(--syntax-query);font-weight:600}
+.highlight .scope-math{color:var(--syntax-math);font-weight:600}
+.highlight .scope-query{color:var(--syntax-query);font-weight:600}
+.highlight .scope-variable{color:var(--syntax-variable);font-weight:600}
+.highlight .fn{color:var(--syntax-function)}
+.highlight .member,.highlight .identifier{color:var(--syntax-member)}
+.highlight .member-query{color:#a8ddff}
+.highlight .member-variable{color:#b4efdb}
+.highlight .comment{color:var(--syntax-comment);font-style:italic}
+.highlight .directive{color:#b3a7ff;font-weight:650}
+.highlight .operator{color:var(--syntax-operator)}
+.highlight .punct{color:var(--syntax-punctuation)}
+.highlight .bad{color:var(--syntax-error);text-decoration:underline wavy var(--syntax-error);text-underline-offset:4px}
+.highlight .err-marker{text-decoration:underline wavy var(--syntax-error);text-underline-offset:4px}
+.editor-foot{border-top:1px solid #3b3b3b;display:flex;justify-content:space-between;gap:16px;padding:9px 15px;color:#c5c5c5;background:#222;font:11px var(--mono)}
+.right{display:grid;gap:24px;min-width:0}
+.result-wrap{padding:20px}
+.output{background:#f6f6f6;border:1px solid var(--rule);min-height:140px;max-height:260px;overflow:auto;padding:15px;word-break:break-all;overflow-wrap:anywhere;white-space:pre-wrap;font:12px/22px var(--mono);color:var(--ink);user-select:text}
+.output.empty{color:#999}
+.result-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
+.output-count{font:11px var(--mono);color:var(--sub)}
+.help{font-size:11px;color:var(--sub);line-height:1.8;margin:16px 0 0}
+.help strong{color:var(--ink)}
+.status{display:flex;align-items:center;gap:7px;color:var(--sub);font-size:11px;font-weight:650}
+.status .dot{background:var(--ink);width:6px;height:6px;display:inline-block}
+.status.error .dot{width:8px;height:8px;border:2px solid var(--ink);background:transparent;transform:rotate(45deg)}
+.status.warn .dot{background:#aaa}
+.diagnostics{padding:12px 20px 20px;display:grid;gap:0;max-height:370px;overflow-y:auto}
+.diagnostic{display:flex;align-items:start;text-align:left;gap:12px;background:none;color:var(--ink);border:0;border-bottom:1px solid var(--rule);width:100%;padding:12px 3px;font-size:12px;line-height:1.6}
+.diagnostic:hover{background:#f1f1f1}
+.diagnostic .mark{flex:none;font:700 13px var(--mono);color:var(--ink);width:15px}
+.diagnostic.warn .mark{color:#888}
+.diagnostic .pos{display:block;font:11px var(--mono);color:var(--sub);margin-top:5px}
+.ok-note{padding:12px 0 3px;color:var(--sub);font-size:12px;line-height:1.7}
+.guide{border-top:1px solid var(--rule);display:flex;gap:16px;align-items:flex-start;margin:24px 0 0;padding:20px 0 18px;color:var(--sub);font-size:11px;line-height:1.9}
+.tipmark{flex:0 0 25px;width:25px;height:25px;text-align:center;line-height:23px;border:1px solid var(--rule-dark);font:600 14px/23px var(--mono);color:var(--ink)}
+.guide strong{color:var(--ink)}
+.guide code{font-family:var(--mono);color:var(--ink)}
+.bottom{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:17px;color:var(--sub);font-size:11px}
+.bottom a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,10px);border:1px solid #fff;background:var(--ink);color:#fff;padding:11px 16px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:15}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.import-dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(610px,calc(100vw - 28px));max-height:calc(100dvh - 36px);margin:0;overflow:auto;background:#fff;border:1px solid var(--ink);padding:0;color:var(--ink);box-shadow:none}
+.import-dialog::backdrop{background:rgba(0,0,0,.55)}
+.dialog-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--rule)}
+.dialog-title{font:700 13px var(--mono);letter-spacing:.3px}
+.dialog-body{padding:22px}
+.dialog-help{margin:0 0 14px;color:var(--sub);font-size:12px;line-height:1.85}
+.import-textarea{display:block;width:100%;height:218px;border:1px solid var(--rule-dark);border-radius:0;background:#fafafa;color:var(--ink);resize:vertical;padding:13px 15px;font:12px/23px var(--mono);tab-size:2;outline-offset:2px}
+.dialog-options{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:14px;color:var(--sub);font-size:11px}
+.option-check{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--ink)}
+.option-check input{accent-color:#171717;margin:0;width:14px;height:14px}
+.import-error{margin:12px 0 0;border-left:2px solid var(--ink);padding:6px 11px;background:#efefef;font-size:12px;line-height:1.7}
+.dialog-footer{display:flex;justify-content:flex-end;gap:9px;border-top:1px solid var(--rule);padding:15px 22px}
+@media(max-width:1060px){.app{padding:0 24px 24px}.workspace{grid-template-columns:minmax(0,1.25fr) minmax(310px,1fr);gap:16px}.right{gap:16px}.panel-head{padding:15px}.result-wrap{padding:15px}}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}.right{grid-template-columns:1fr 1fr}.editor-shell{height:50vh;min-height:325px}.header{min-height:83px}}
+@media(max-width:610px){.app{padding:0 14px 24px}.header-meta{display:none}.intro{padding:13px 0;min-height:0}.right{grid-template-columns:1fr}.panel-head{align-items:start;flex-wrap:wrap}.actions{justify-content:flex-start}.gutter{flex-basis:43px}.gutter-inner{padding-right:9px}.highlight,.code-input{padding:18px 12px;font-size:12px}.hint{display:none}.editor-shell{min-height:320px}.brand{gap:12px}h1{font-size:20px}}
+
+/* Collected-variable catalog; monochrome controls, colored editor syntax remains unchanged. */
+.catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 16px;background:#f3f3f3;border-bottom:1px solid #d1d1d1}
+.catalog-description{display:flex;flex-direction:column;gap:2px;min-width:0}
+.catalog-description strong{font-size:11px;font-weight:650}
+.catalog-description span{font-size:10px;color:#666;overflow-wrap:anywhere}
+.catalog-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.suggestion.variable .suggestion-name{color:#66dfbc}
+@media(max-width:610px){.catalog-toolbar{padding:10px 12px}.catalog-controls{width:100%}}
+/* Autocomplete remains attached to the code layer; outside layout stays monochrome. */
+.suggestions{position:absolute;z-index:10;left:16px;top:45px;width:min(500px,calc(100% - 22px));max-height:310px;overflow:auto;background:#242424;border:1px solid #777;box-shadow:0 8px 20px #0009;color:#e9e9e9;font:12px/1.45 var(--mono)}
+.suggestions[hidden],.signature-help[hidden]{display:none!important}
+.suggestion{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;text-align:left;padding:8px 11px;background:transparent;border:0;border-bottom:1px solid #393939;color:inherit;cursor:pointer}
+.suggestion:last-child{border-bottom:0}.suggestion:hover,.suggestion.selected{background:#3b3b3b}
+.suggestion-name{font-weight:650;color:#91cbff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.suggestion.animation .suggestion-name{color:#b3a7ff}.suggestion.controller .suggestion-name{color:#a7c6ff}
+.suggestion.math .suggestion-name{color:#ffd479}.suggestion.keyword .suggestion-name{color:#c792ea}.suggestion.variable .suggestion-name{color:#66dfbc}
+.suggestion-tag{font:10px var(--mono);color:#aaa}.suggestion-detail{grid-column:1 / -1;font-size:11px;color:#b9b9b9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.signature-help{padding:10px 16px;background:#2b2b2b;border-top:1px solid #515151;color:#e5e5e5;font:12px/1.6 var(--mono);word-break:break-word}
+.signature-help .sig-call{color:#b9d9f7}.signature-help .sig-active{background:#5c4c22;color:#ffe4a1;padding:2px 3px}
+.signature-help .sig-info{display:block;color:#b0b0b0;font:11px var(--sans);margin-top:3px}
+@media(max-width:610px){.suggestions{max-height:240px}.suggestion{padding:10px}.signature-help{padding:9px 10px}}
+
+/* Plain layout: only the editor, output, info, and links. */
+:root{--page:#fff;--surface:#fff;--rule:#d5d5d5}
+html,body{background:#fff}
+.app{max-width:1400px;margin:0 auto;padding:0 24px 24px}
+.header{min-height:0;padding:22px 0 16px;border-bottom:1px solid var(--rule);display:block}
+h1{font:600 21px/1.35 var(--sans);letter-spacing:0}
+h2{margin:0;font:600 15px/1.45 var(--sans);letter-spacing:0}
+.workspace{grid-template-columns:minmax(0,1.75fr) minmax(300px,1fr);gap:28px;margin-top:24px;align-items:start}
+.editor-section,.output-section,.info-section{min-width:0}
+.panel-head{display:flex;min-height:0;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:0 0 12px;border-bottom:0}
+.actions{justify-content:flex-end;gap:6px}
+.btn{border-radius:0;box-shadow:none;background:#fff;border:1px solid #bbb;color:#222;padding:6px 9px;font-size:12px;font-weight:500;transition:none}
+.btn:hover{background:#f2f2f2;border-color:#777}
+.btn.primary{background:#222;color:#fff;border-color:#222}
+.btn.primary:hover{background:#444}
+.btn.small{padding:6px 9px;font-size:12px}
+.editor-shell{height:min(68vh,720px);min-height:360px;border:1px solid #444}
+.highlight,.code-input{padding:16px}
+.gutter-inner{padding-top:16px}
+.editor-foot{border:1px solid #444;border-top:0}
+.right{display:grid;gap:28px}
+.output-section h2,.info-section h2{margin:0 0 12px}
+.output{min-height:140px;max-height:300px;border:1px solid var(--rule);background:#fafafa;padding:14px}
+.result-bottom{margin-top:8px}
+.info-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--rule);padding:0 0 10px}
+.info-head h2{margin:0}
+.diagnostics{padding:4px 0 0;max-height:260px}
+.diagnostic{padding:10px 0}
+.ok-note{padding:10px 0;font-size:12px;color:#555}
+.info-notes{font-size:12px;color:#555;line-height:1.7}
+.info-notes p{margin:8px 0 0}
+.info-notes code{font-family:var(--mono);font-size:11px;color:#222}
+.catalog-info{padding-top:12px;margin-top:12px;border-top:1px solid var(--rule);font-size:11px;overflow-wrap:anywhere}
+.catalog-info>div+div{margin-top:4px}
+.bottom{margin-top:28px;display:flex;justify-content:space-between;gap:16px;align-items:center;border-top:1px solid var(--rule);padding-top:16px;font-size:12px}
+.bottom span{font-weight:600;color:#222}
+.bottom nav{display:flex;gap:18px;flex-wrap:wrap}
+.bottom a{color:#333}
+@media(max-width:1050px){.workspace{grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);gap:20px}.app{padding:0 18px 20px}}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}.right{display:grid;grid-template-columns:1fr;gap:24px}.editor-shell{height:50vh;min-height:340px}.panel-head{align-items:flex-start}.actions{justify-content:flex-start}}
+@media(max-width:610px){.app{padding:0 12px 20px}.header{padding:18px 0 12px}h1{font-size:19px}.workspace{margin-top:18px}.highlight,.code-input{padding:14px 10px}.gutter-inner{padding-top:14px}.gutter{flex-basis:40px}.actions{gap:5px}.btn.small{padding:5px 7px;font-size:11px}}
+
+/* Docs: only the modal uses motion. */
+.docs-dialog{position:fixed;inset:0;margin:auto;width:min(890px,calc(100vw - 28px));max-width:none;max-height:calc(100dvh - 28px);padding:0;border:1px solid #aaa;border-radius:0;background:#fff;color:#171717;overflow:hidden;box-shadow:none}
+.docs-dialog::backdrop{background:rgba(0,0,0,.38)}
+.docs-card{display:flex;flex-direction:column;min-height:0;max-height:calc(100dvh - 30px)}
+.docs-dialog[open] .docs-card{animation:docs-descend .22s cubic-bezier(.22,.75,.30,1) both}
+@keyframes docs-descend{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.docs-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #d8d8d8;padding:16px 20px}
+.docs-head h2{font-size:18px;font-weight:600}
+.docs-close{border:0;background:none;color:#555;font-size:24px;line-height:1;padding:2px 6px;font-weight:400}
+.docs-close:hover{color:#111;background:#f2f2f2}
+.docs-controls{flex:none;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:0 20px;border-bottom:1px solid #d8d8d8}
+.docs-tabs{display:flex;gap:18px;align-items:center;overflow-x:auto;max-width:100%}
+.docs-tab{background:none;color:#777;border:0;border-bottom:2px solid transparent;border-radius:0;padding:14px 0 11px;font-size:12px;white-space:nowrap}
+.docs-tab[aria-selected="true"]{color:#111;font-weight:600;border-bottom-color:#111}
+.docs-tab:hover{color:#111}
+.docs-search{width:210px;max-width:100%;border:1px solid #ccc;background:#fff;border-radius:0;padding:7px 9px;color:#222;font:12px var(--sans)}
+.docs-scroll{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 20px 18px;scrollbar-color:#bbb #fff}
+.docs-summary{padding:16px 0 10px;color:#666;font-size:11px}
+.docs-list{display:grid;grid-template-columns:1fr;gap:0}
+.docs-item{display:grid;grid-template-columns:minmax(170px,35%) minmax(0,1fr);align-items:start;gap:10px 22px;border-top:1px solid #e2e2e2;padding:14px 0}
+.docs-name{font:12px/1.65 var(--mono);color:#161616;overflow-wrap:anywhere;white-space:pre-wrap}
+.docs-description{font-size:12px;line-height:1.65;color:#4a4a4a;min-width:0}
+.docs-example{display:block;margin-top:6px;color:#777;font:11px/1.65 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}
+.docs-empty{padding:35px 0;color:#777;text-align:center;font-size:12px}
+.docs-foot{flex:none;border-top:1px solid #d8d8d8;padding:12px 20px;display:flex;justify-content:flex-end;gap:16px}
+.docs-foot a{color:#444;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:650px){.docs-head{padding:13px 14px}.docs-controls{padding:0 14px 12px}.docs-tabs{width:100%;gap:19px}.docs-search{width:100%}.docs-scroll{padding:0 14px 10px}.docs-item{grid-template-columns:1fr;gap:4px;padding:12px 0}.docs-example{margin-top:4px}.docs-foot{padding:12px 14px}}
+@media(prefers-reduced-motion:reduce){.docs-dialog[open] .docs-card{animation:none}}
+/* Disable programming font ligatures, including on Docs names and examples. */
+code,pre,.code-input,.highlight,.output,.docs-name,.docs-example,.suggestions,.signature-help,.kbd {
+  font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"calt" 0,"dlig" 0;
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="header"><h1>Molang Editor</h1></header>
+  <div class="workspace">
+    <section class="editor-section" aria-label="エディタ">
+      <div class="panel-head">
+        <h2>エディタ</h2>
+        <div class="actions">
+          <button class="btn small" id="importOpen">インポート</button>
+          <button class="btn small" id="format">整形</button>
+          <button type="button" class="btn small" id="docsOpen" aria-haspopup="dialog" aria-controls="docsDialog">Docs</button>
+          <button class="btn small" id="clear">消去</button>
+          <button type="button" class="btn small" id="catalogLoad">JSON読込</button>
+          <button type="button" class="btn small" id="catalogReset" title="収集した補完データを初期状態に戻す">辞書リセット</button>
+          <input type="file" id="catalogFile" accept=".json,application/json" hidden aria-label="変数収集結果のJSON">
+        </div>
+      </div>
+      <div class="editor-shell">
+        <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="lines">1</div></div>
+        <div class="code-stack">
+          <pre id="highlight" class="highlight" aria-hidden="true"></pre>
+          <textarea class="code-input" id="code" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" aria-label="MoLang コード" aria-controls="suggestions" aria-autocomplete="list" aria-expanded="false"></textarea>
+          <div id="suggestions" class="suggestions" role="listbox" aria-label="入力候補" hidden></div>
+        </div>
+      </div>
+      <div id="signatureHelp" class="signature-help" role="status" aria-live="polite" hidden></div>
+      <div class="editor-foot"><span id="caretInfo">行 1 · 列 1</span><span id="editorInfo">1 行</span></div>
+    </section>
+    <div class="right">
+      <section class="output-section" aria-label="出力">
+        <h2>出力</h2>
+        <div id="output" class="output" role="textbox" aria-readonly="true" aria-label="一行の MoLang 出力"></div>
+        <div class="result-bottom"><span id="count" class="output-count">0 文字</span><button id="copy" class="btn primary">コピー</button></div>
+      </section>
+      <section class="info-section" aria-label="Info">
+        <div class="info-head"><h2>Info</h2><div id="status" class="status ok"><span class="dot"></span><span id="statusText">チェック中</span></div></div>
+        <div class="diagnostics" id="diagnostics"></div>
+        <div class="info-notes">
+          <p><code>Tab</code> 補完・インデント / <code>Ctrl+Space</code> 候補表示 / <code>Ctrl+Enter</code> コピー</p>
+          <p><code>#&gt; animation.id</code> を先頭に指定すると、そのアニメーションに対応した変数を補完します。指定行とコメントは出力に含まれません。</p>
+          <div class="catalog-info"><div id="catalogSummary" role="status" aria-live="polite">読み込み中</div><div id="scopeSummary" role="status" aria-live="polite"></div></div>
+          <p>構文チェックは静的解析です。実際の動作はゲーム内で確認してください。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+  <footer class="bottom"><span>リンク</span><nav aria-label="リンク">
+    <a href="https://learn.microsoft.com/en-us/minecraft/creator/documents/molang/syntax-guide" target="_blank" rel="noopener noreferrer">構文</a>
+    <a href="https://learn.microsoft.com/en-us/minecraft/creator/reference/content/molangreference/examples/molangconcepts/queryfunctions" target="_blank" rel="noopener noreferrer">Query</a>
+    <a href="https://learn.microsoft.com/en-us/minecraft/creator/reference/content/molangreference/examples/molangconcepts/mathfunctions" target="_blank" rel="noopener noreferrer">Math</a>
+  </nav></footer>
+</main>
+
+<dialog class="docs-dialog" id="docsDialog" aria-labelledby="docsTitle">
+  <div class="docs-card">
+    <div class="docs-head"><h2 id="docsTitle">Docs</h2><button type="button" class="docs-close" id="docsClose" aria-label="閉じる">×</button></div>
+    <div class="docs-controls">
+      <div class="docs-tabs" role="tablist" aria-label="Docs カテゴリ">
+        <button type="button" class="docs-tab" data-docs-tab="operators" role="tab" aria-selected="true">演算子</button>
+        <button type="button" class="docs-tab" data-docs-tab="builtins" role="tab" aria-selected="false">組み込み</button>
+        <button type="button" class="docs-tab" data-docs-tab="math" role="tab" aria-selected="false">Math</button>
+        <button type="button" class="docs-tab" data-docs-tab="query" role="tab" aria-selected="false">Query</button>
+      </div>
+      <input id="docsSearch" class="docs-search" type="search" placeholder="検索" aria-label="Docs 検索">
+    </div>
+    <div id="docsScroll" class="docs-scroll" role="tabpanel" aria-label="MoLang ドキュメント">
+      <div id="docsSummary" class="docs-summary" aria-live="polite"></div>
+      <div id="docsEntries" class="docs-list"></div>
+    </div>
+    <div class="docs-foot"><a href="https://learn.microsoft.com/en-us/minecraft/creator/documents/molang/syntax-guide" target="_blank" rel="noopener noreferrer">公式構文</a><a href="https://learn.microsoft.com/en-us/minecraft/creator/reference/content/molangreference/examples/molangconcepts/mathfunctions" target="_blank" rel="noopener noreferrer">公式Math</a><a href="https://learn.microsoft.com/en-us/minecraft/creator/reference/content/molangreference/examples/molangconcepts/queryfunctions" target="_blank" rel="noopener noreferrer">公式Query</a></div>
+  </div>
+</dialog>
+<dialog class="import-dialog" id="importDialog" aria-labelledby="importTitle">
+  <div class="dialog-top"><div class="dialog-title" id="importTitle">インポート</div><button class="btn quiet small" type="button" id="importClose" aria-label="閉じる">閉じる ×</button></div>
+  <form id="importForm">
+    <div class="dialog-body">
+      <textarea id="importText" class="import-textarea" spellcheck="false" placeholder="temp.angle = math.sin(query.anim_time * 38); return temp.angle * 45;" aria-label="インポートするMoLang式"></textarea>
+      <div class="dialog-options"><label class="option-check"><input type="checkbox" id="importFormat" checked> 読み込み後に自動で改行・整形</label><span id="importCount">0 文字</span></div>
+      <p class="import-error" id="importError" role="alert" hidden></p>
+    </div>
+    <div class="dialog-footer"><button type="button" id="importCancel" class="btn">キャンセル</button><button type="submit" id="importConfirm" class="btn primary">読み込む</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script id="builtInCollectorData" type="application/json">{"generated_at_utc":"2026-10-12T04:10:08+00:00","scope_note":"Partial dataset: seven definitions transcribed from 3 freely available Mojang/bedrock-samples animation JSON files; NOT the entire repository. The environment could not download the complete repository.","canonical_namespaces":["query","variable","temp","context","math","array","this"],"statistics":{"input_files":3,"files_with_definitions":3,"definitions":7,"occurrences":15,"animation_count":7,"animation_controller_count":0,"distinct_symbols":{"query":5,"variable":1,"temp":0,"context":0,"math":1,"array":0,"this":1}},"animations":{"animation.actor.billboard":{"symbols":{"query":["query.camera_rotation"],"variable":[],"temp":[],"context":[],"math":[],"array":[],"this":[]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/actor.animation.json","occurrences":[{"symbol":"query.camera_rotation","category":"query","json_pointer":"/animations/animation.actor.billboard/bones/body/rotation/0","offsets":[0]},{"symbol":"query.camera_rotation","category":"query","json_pointer":"/animations/animation.actor.billboard/bones/body/rotation/1","offsets":[0]}]}]},"animation.fireworks_rocket.move":{"symbols":{"query":["query.target_x_rotation","query.target_y_rotation"],"variable":[],"temp":[],"context":[],"math":[],"array":[],"this":[]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/fireworks_rocket.animation.json","occurrences":[{"symbol":"query.target_x_rotation","category":"query","json_pointer":"/animations/animation.fireworks_rocket.move/bones/body/rotation/0","offsets":[1]},{"symbol":"query.target_y_rotation","category":"query","json_pointer":"/animations/animation.fireworks_rocket.move/bones/body/rotation/1","offsets":[1]}]}]},"animation.npc.baby_transform":{"symbols":{"query":[],"variable":[],"temp":[],"context":[],"math":[],"array":[],"this":[]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/npc.animation.json","occurrences":[]}]},"animation.npc.general":{"symbols":{"query":[],"variable":[],"temp":[],"context":[],"math":[],"array":[],"this":["this"]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/npc.animation.json","occurrences":[{"symbol":"this","category":"this","json_pointer":"/animations/animation.npc.general/bones/arms/rotation/0","offsets":[9]}]}]},"animation.npc.get_in_bed":{"symbols":{"query":[],"variable":[],"temp":[],"context":[],"math":[],"array":[],"this":[]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/npc.animation.json","occurrences":[]}]},"animation.npc.move":{"symbols":{"query":["query.anim_time","query.modified_distance_moved"],"variable":[],"temp":[],"context":[],"math":["math.cos"],"array":[],"this":["this"]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/npc.animation.json","occurrences":[{"symbol":"query.modified_distance_moved","category":"query","json_pointer":"/animations/animation.npc.move/anim_time_update","offsets":[0]},{"symbol":"math.cos","category":"math","json_pointer":"/animations/animation.npc.move/bones/leg0/rotation/0","offsets":[1]},{"symbol":"query.anim_time","category":"query","json_pointer":"/animations/animation.npc.move/bones/leg0/rotation/0","offsets":[10]},{"symbol":"this","category":"this","json_pointer":"/animations/animation.npc.move/bones/leg0/rotation/0","offsets":[45]},{"symbol":"this","category":"this","json_pointer":"/animations/animation.npc.move/bones/leg0/rotation/1","offsets":[1]},{"symbol":"math.cos","category":"math","json_pointer":"/animations/animation.npc.move/bones/leg1/rotation/0","offsets":[1]},{"symbol":"query.anim_time","category":"query","json_pointer":"/animations/animation.npc.move/bones/leg1/rotation/0","offsets":[10]},{"symbol":"this","category":"this","json_pointer":"/animations/animation.npc.move/bones/leg1/rotation/0","offsets":[51]},{"symbol":"this","category":"this","json_pointer":"/animations/animation.npc.move/bones/leg1/rotation/1","offsets":[1]}]}]},"animation.npc.raise_arms":{"symbols":{"query":[],"variable":["variable.raise_arms"],"temp":[],"context":[],"math":[],"array":[],"this":[]},"definitions":[{"source":"public-web-transcription:Mojang/bedrock-samples@main/resource_pack/animations/npc.animation.json","occurrences":[{"symbol":"variable.raise_arms","category":"variable","json_pointer":"/animations/animation.npc.raise_arms/bones/arms/rotation/0","offsets":[0]}]}]}},"animation_controllers":{},"index":{"query":{"query.anim_time":{"animations":["animation.npc.move"],"animation_controllers":[],"references":2},"query.camera_rotation":{"animations":["animation.actor.billboard"],"animation_controllers":[],"references":2},"query.modified_distance_moved":{"animations":["animation.npc.move"],"animation_controllers":[],"references":1},"query.target_x_rotation":{"animations":["animation.fireworks_rocket.move"],"animation_controllers":[],"references":1},"query.target_y_rotation":{"animations":["animation.fireworks_rocket.move"],"animation_controllers":[],"references":1}},"variable":{"variable.raise_arms":{"animations":["animation.npc.raise_arms"],"animation_controllers":[],"references":1}},"temp":{},"context":{},"math":{"math.cos":{"animations":["animation.npc.move"],"animation_controllers":[],"references":2}},"array":{},"this":{"this":{"animations":["animation.npc.general","animation.npc.move"],"animation_controllers":[],"references":5}}},"errors":[],"sources":{"github":null,"local":[],"web_transcribed_from":["https://github.com/Mojang/bedrock-samples/blob/main/resource_pack/animations/npc.animation.json","https://github.com/Mojang/bedrock-samples/blob/main/resource_pack/animations/actor.animation.json","https://github.com/Mojang/bedrock-samples/blob/main/resource_pack/animations/fireworks_rocket.animation.json"]}}</script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const editor=$('code'),highlight=$('highlight'),gutter=$('lines'),output=$('output'),diagnosticsEl=$('diagnostics'),status=$('status'),statusText=$('statusText'),countEl=$('count');
+let lastTokens=[],lastErrors=[],currentOutput='',hasRealCode=false,toastTimer;
+const knownRoots=new Set(['query','q','variable','v','temp','t','context','c','math','m','array','a','geometry','texture','material']);
+const keywords=new Set(['return','break','continue','loop','for_each','true','false','this']);
+/* Definitions checked against Mojang/Microsoft MoLang reference, 2025-11. */
+// Official list of non-internal query identifiers. Entries without verified
+// signatures get name completion but no speculative arity validation.
+const QUERY_NAMES=`above_top_solid actor_count all all_animations_finished all_tags anger_level anim_time any any_animation_finished any_tag approx_eq armor_color_slot armor_damage_slot armor_material_slot armor_texture_slot average_frame_time base_swing_duration blocking block_face block_has_all_tags block_has_any_tag block_neighbor_has_all_tags block_neighbor_has_any_tag block_state body_x_rotation body_y_rotation bone_aabb bone_orientation_matrix bone_orientation_trs bone_origin bone_rotation camera_distance_range_lerp camera_rotation can_climb can_damage_nearby_mobs can_dash can_fly can_power_jump can_swim can_walk cape_flap_amount cardinal_facing cardinal_facing_2d cardinal_player_facing client_max_render_distance client_memory_tier combine_entities cooldown_time cooldown_time_remaining count current_squish_value day death_ticks delta_time distance_from_camera effect_emitter_count effect_particle_count entity_biome_has_all_tags entity_biome_has_any_identifier entity_biome_has_any_tags equipment_count equipped_item_all_tags equipped_item_any_tag equipped_item_is_attachable eye_target_x_rotation eye_target_y_rotation facing_target_to_range_attack frame_alpha fuse_time get_actor_info_id get_animation_frame get_default_bone_pivot get_level_seed_based_fraction get_locator_offset get_pack_setting get_root_locator_offset graphics_mode_is_any ground_speed had_component_group has_all_biome_tags has_any_biome_tags has_any_family has_any_leashed_entity_of_type has_armor_slot has_biome_tag has_block_state has_cape has_collision has_dash_cooldown has_gravity has_head_gear has_owner has_player_rider has_property has_rider has_target head_is_in_water head_roll_angle head_x_rotation head_y_rotation health heartbeat_interval heartbeat_phase heightmap hurt_direction hurt_time invulnerable_ticks in_range is_admiring is_alive is_angry is_attached is_attached_to_entity is_avoiding_block is_avoiding_mobs is_baby is_breathing is_bribed is_carrying_block is_casting is_celebrating is_celebrating_special is_charged is_charging is_chested is_cooldown_category is_crawling is_critical is_croaking is_dancing is_delayed_attacking is_digging is_eating is_eating_mob is_elder is_emerging is_emoting is_enchanted is_fire_immune is_first_person is_ghost is_gliding is_grazing is_idling is_ignited is_illager_captain is_interested is_invisible is_in_contact_with_water is_in_lava is_in_love is_in_ui is_in_water is_in_water_or_rain is_item_equipped is_item_name_any is_jumping is_jump_goal_jumping is_laying_down is_laying_egg is_leashed is_levitating is_lingering is_local_player is_moving is_name_any is_onfire is_on_fire is_on_ground is_on_screen is_orphaned is_owner_identifier_any is_pack_setting_enabled is_pack_setting_selected is_persona_or_premium_skin is_playing_dead is_powered is_pregnant is_ram_attacking is_resting is_riding is_riding_any_entity_of_type is_rising is_roaring is_rolling is_saddled is_scared is_scenting is_searching is_selected_item is_shaking is_shaking_wetness is_sheared is_shield_powered is_silent is_sitting is_sleeping is_sneaking is_sneezing is_sniffing is_sonic_boom is_spectator is_sprinting is_stackable is_stalking is_standing is_stunned is_swimming is_tamed is_transforming is_using_item is_wall_climbing item_in_use_duration item_is_charged item_max_use_duration item_remaining_use_duration item_slot_to_bone_name key_frame_lerp_time kinetic_weapon_damage_duration kinetic_weapon_delay kinetic_weapon_dismount_duration kinetic_weapon_knockback_duration last_frame_time last_hit_by_player last_input_mode_is_any leashed_entity_count lie_amount life_span life_time log main_hand_item_max_duration main_hand_item_use_duration mark_variant maximum_frame_time max_durability max_health max_trade_tier minimum_frame_time model_scale modified_distance_moved modified_move_speed modified_swing_duration moon_brightness moon_phase movement_direction noise on_fire_time out_of_control player_level position position_delta previous_squish_value property relative_block_has_all_tags relative_block_has_any_tag remaining_durability rider_body_x_rotation rider_body_y_rotation rider_head_x_rotation rider_head_y_rotation ride_body_x_rotation ride_body_y_rotation ride_head_x_rotation ride_head_y_rotation roll_counter rotation_to_camera scoreboard server_memory_tier shake_angle shake_time shield_blocking_bob show_bottom sit_amount skin_id sleep_rotation sneeze_counter spellcolor standing_scale state_time structural_integrity surface_particle_color surface_particle_texture_coordinate surface_particle_texture_size swelling_dir swell_amount swim_amount tail_angle target_x_rotation target_y_rotation ticks_since_last_kinetic_weapon_hit timer_flag_1 timer_flag_2 timer_flag_3 time_of_day time_since_last_vibration_detection time_stamp total_emitter_count total_particle_count touch_only_affects_hotbar trade_tier variant vertical_speed walk_distance wing_flap_position wing_flap_speed yaw_speed`.split(/\s+/);
+const QUERY_SET=new Set(QUERY_NAMES);
+// All 61 official math entries: 60 functions and math.pi constant.
+const MATH_SIG={};
+function defineMath(names,args,description='数学関数') {for(const name of names.split(/\s+/)){if(name)MATH_SIG[name]={args:[...args],description}}}
+defineMath('abs acos asin atan ceil cos exp floor hermite_blend ln min_angle round sign sin sqrt trunc',['value']);
+defineMath('atan2',['y','x'],'atan2（y, x の順・角度は度数法）');
+defineMath('copy_sign',['A','B'],'A の大きさと B の符号を合成');
+defineMath('clamp',['value','min','max'],'value を min ～ max の範囲に制限');
+defineMath('die_roll die_roll_integer',['num','low','high'],'num 回の乱数の合計');
+defineMath('lerp lerprotate',['start','end','t'],'start と end の間を t で補間');
+defineMath('inverse_lerp',['start','end','value'],'逆線形補間');
+defineMath('min max',['A','B']);
+defineMath('mod',['value','denominator'],'除算の余り');
+defineMath('pow',['base','exponent'],'べき乗');
+defineMath('random random_integer',['low','high'],'low から high の間の乱数');
+for(const mode of ['in','out','in_out'])for(const style of ['back','bounce','circ','cubic','elastic','expo','quad','quart','quint','sine']){
+  const name=`ease_${mode}_${style}`;
+  // Official catalog omits ease_in_out_*? All ten present, yes.
+  MATH_SIG[name]={args:['start','end','t'],description:`${mode.replaceAll('_',' / ')} ${style} イージング`};
+}
+const MATH_SET=new Set([...Object.keys(MATH_SIG),'pi']);
+// Verified query callable signatures, from Microsoft reference and individual function docs.
+// Optional arguments have a trailing '?', variadic tails have '...' .
+const QUERY_SIG={};
+function defineQuery(names,args,description='',min=args.filter(x=>!x.endsWith('?')&&!x.endsWith('...')).length,max=args.some(x=>x.endsWith('...'))?Infinity:args.length){
+ for(const name of names.split(/\s+/)){if(name)QUERY_SIG[name]={args:[...args],min,max,description};}
+}
+defineQuery('all any',['value','first_compare','second_compare','more...'],'最初の値と、後続の2個以上の値を比較',3,Infinity);
+defineQuery('approx_eq',['first','second','more...'],'浮動小数点の精度に基づく近似比較',2,Infinity);
+defineQuery('all_tags any_tag all_tags',['tag','more...'],'タグ判定',1,Infinity);
+defineQuery('armor_color_slot armor_damage_slot armor_material_slot armor_texture_slot has_armor_slot',['slot'],'防具スロット番号（0～3）');
+defineQuery('average_frame_time maximum_frame_time minimum_frame_time',['frames'],'測定対象のフレーム数');
+defineQuery('block_state has_block_state property has_property',['name'],'名前（文字列）');
+defineQuery('block_has_all_tags block_has_any_tag block_neighbor_has_all_tags block_neighbor_has_any_tag relative_block_has_all_tags relative_block_has_any_tag',['x','y','z','tag','more...'],'座標とタグ名',4,Infinity);
+defineQuery('camera_distance_range_lerp',['near','far'],'カメラ距離による補間');
+defineQuery('entity_biome_has_all_tags entity_biome_has_any_tags entity_biome_has_any_identifier has_all_biome_tags has_any_biome_tags has_any_family has_any_leashed_entity_of_type',['name','more...'],'1個以上の名称',1,Infinity);
+defineQuery('bone_aabb bone_orientation_matrix bone_orientation_trs bone_origin bone_rotation',['bone'],'ボーン名（文字列）');
+defineQuery('get_default_bone_pivot get_locator_offset get_root_locator_offset',['name','axis'],'名前と軸（0=x, 1=y, 2=z）');
+defineQuery('head_x_rotation head_y_rotation rider_body_x_rotation rider_body_y_rotation rider_head_x_rotation rider_head_y_rotation',['index'],'インデックス');
+defineQuery('heightmap above_top_solid',['x','z'],'X・Z座標');
+defineQuery('in_range',['value','min','max'],'両端を含めた範囲判定');
+defineQuery('is_name_any is_owner_identifier_any is_riding_any_entity_of_type',['name','more...'],'1個以上の名前',1,Infinity);
+defineQuery('is_item_name_any',['slot','index?','item','more...'],'装備スロット・必要に応じたスロット番号・名前空間付きアイテムID',2,Infinity);
+defineQuery('is_item_equipped item_is_charged',['hand?'],'0/1 または main_hand/off_hand',0,1);
+defineQuery('equipped_item_all_tags equipped_item_any_tag',['slot','tag','more...'],'装備スロットとタグ',2,Infinity);
+defineQuery('equipped_item_is_attachable',['hand'],'メインハンド・オフハンド');
+defineQuery('get_actor_info_id get_pack_setting is_pack_setting_enabled had_component_group scoreboard',['name'],'名称（文字列）');
+defineQuery('is_pack_setting_selected',['setting','selection'],'設定名と選択名');
+defineQuery('last_input_mode_is_any graphics_mode_is_any',['value','more...'],'1個以上の入力方式・描画モード',1,Infinity);
+// The individual official references do not document argument signatures for these two queries.
+// Keep completion only, rather than asserting optional arguments as fact.
+defineQuery('is_cooldown_category cooldown_time cooldown_time_remaining',['slot','index?'],'スロット名と任意の番号',1,2);
+defineQuery('item_slot_to_bone_name',['slot'],'スロット名');
+defineQuery('movement_direction position position_delta',['axis'],'軸番号（0=x, 1=y, 2=z）');
+defineQuery('camera_rotation rotation_to_camera',['axis'],'回転軸（0=x, 1=y）');
+defineQuery('noise',['x','z'],'ノイズ座標');
+defineQuery('log',['value'],'コンテンツログ出力');
+defineQuery('count combine_entities',['value','more...'],'値（可変長）',1,Infinity);
+defineQuery('has_biome_tag',['tag'],'バイオームタグ');
+defineQuery('get_root_locator_offset',['name','axis'],'ロケータ名・座標軸');
+defineQuery('has_all_biome_tags has_any_biome_tags',['tag','more...'],'タグ名（可変長）',1,Infinity);
+// User-important descriptive hints (for no-argument queries as well).
+const QUERY_DESC={get_level_seed_based_fraction:'ワールドシード由来の0〜1の値（format_version 1.26.10以降）。',anim_time:'現在のアニメーション経過時間（秒）',life_time:'アニメーション経過時間（秒、評価コンテキスト依存）',delta_time:'前フレームからの経過秒数',state_time:'アニメーションコントローラーの状態経過時間（秒）',key_frame_lerp_time:'前後キーフレーム間の補間係数',ground_speed:'地表の移動速度（m/s）',vertical_speed:'上下速度（m/s）',yaw_speed:'ヨー回転速度',modified_distance_moved:'累積水平移動距離',modified_move_speed:'歩行移動速度',is_moving:'移動中か',is_on_ground:'地面にいるか',is_sneaking:'しゃがんでいるか',is_sprinting:'ダッシュ中か',is_jumping:'ジャンプ中か',is_swimming:'泳いでいるか',is_using_item:'アイテム使用中か',head_x_rotation:'頭の X 回転（必要なら頭番号）',head_y_rotation:'頭の Y 回転（必要なら頭番号）',body_x_rotation:'身体の X 回転',body_y_rotation:'身体の Y 回転',health:'現在体力',max_health:'最大体力',position:'座標軸を指定して位置を取得',time_of_day:'一日の経過（0～1）',distance_from_camera:'カメラからの距離',frame_alpha:'AIティック間の描画補間',is_first_person:'一人称表示か',is_on_screen:'画面内表示中か',is_alive:'生存しているか',query:'クエリ',rotation_to_camera:'カメラ方向への回転',wing_flap_position:'翼の羽ばたき位置',wing_flap_speed:'翼の羽ばたき速度'};
+const OTHER_SIG={loop:{args:['count','expression'],min:2,max:2,description:'最大1024回繰り返す'},for_each:{args:['variable','array','expression'],min:3,max:3,description:'エンティティ配列を走査'}};
+const fnArgCounts=Object.fromEntries(Object.entries(MATH_SIG).map(([k,v])=>[k,v.args.length]));
+const preferredQueries=new Set('anim_time life_time delta_time state_time key_frame_lerp_time ground_speed vertical_speed yaw_speed is_moving is_on_ground is_sneaking is_sprinting is_jumping is_swimming is_using_item head_x_rotation head_y_rotation body_x_rotation body_y_rotation health max_health position position_delta modified_distance_moved modified_move_speed frame_alpha distance_from_camera time_of_day is_alive'.split(' '));
+
+function addDiag(arr,message,start=0,end=start+1,level='error'){if(arr.length<80)arr.push({message,start,end:Math.max(start+1,end),level})}
+// Editor-only header, recognized only on the first non-empty line.
+function animationHeader(src){
+ let pos=0;
+ while(pos<src.length){
+  const next=src.indexOf('\n',pos),end=next===-1?src.length:next;
+  const line=src.slice(pos,end).replace(/\r$/,'');
+  if(line.trim()){
+   const match=/^([ \t]*)#>(.*)$/.exec(line);
+   if(!match)return null;
+   const rest=match[2],idMatch=/^[ \t]*([^\s]*)[ \t]*$/.exec(rest);
+   return {start:pos+match[1].length,end,id:idMatch?.[1]??null,valid:!!idMatch};
+  }
+  if(next===-1)break;pos=next+1;
+ }
+ return null;
+}
+function selectedAnimation(src){
+ const header=animationHeader(src);return header?.valid&&header.id?activeCollector?.animationById.get(header.id.toLowerCase())||null:null;
+}
+function tokenize(src){const tokens=[],errors=[];const directive=animationHeader(src);let i=0;const push=(type,start,end)=>tokens.push({type,value:src.slice(start,end),start,end});while(i<src.length){const start=i,c=src[i],n=src[i+1];if(/\s/.test(c)){i++;continue}
+ if(directive&&i===directive.start){i=directive.end;push('directive',start,i);continue}
+if(c==='/'&&n==='/'){i+=2;while(i<src.length&&src[i]!=='\n')i++;push('comment',start,i);continue}
+if(c==='/'&&n==='*'){i+=2;const end=src.indexOf('*/',i);if(end===-1){i=src.length;addDiag(errors,'ブロックコメント /* が閉じられていません。',start,i)}else i=end+2;push('comment',start,i);continue}
+if(c==="'"){i++;while(i<src.length&&src[i]!=="'"&&src[i]!=='\n'&&src[i]!=='\r')i++;if(src[i]==="'")i++;else addDiag(errors,'シングルクォーテーションの文字列が閉じられていません。',start,i);push('str',start,i);continue}
+if(c==='"'){i++;addDiag(errors,'MoLang 内の文字列はダブルクォーテーションではなく、シングルクォーテーションを使います。',start,i);push('bad',start,i);continue}
+const tail=src.slice(i);let m;if((m=tail.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/))){i+=m[0].length;push('num',start,i);continue}if((m=tail.match(/^[a-zA-Z_][a-zA-Z_0-9]*/))){i+=m[0].length;push('ident',start,i);continue}
+let op=['->','??','&&','||','==','!=','<=','>=','+=','-=','*=','/=','++','--','%=','**'].find(x=>tail.startsWith(x));if(op){i+=op.length;if(['+=','-=','*=','/=','++','--','%=','**'].includes(op))addDiag(errors,`演算子 ${op} は標準的な MoLang 文法にありません。`,start,i);push(['+=','-=','*=','/=','++','--','%=','**'].includes(op)?'bad':'op',start,i);continue}
+if('(){}[];,.?:=!<>+-*/'.includes(c)){i++;push('op',start,i);continue}
+if(c==='%'){i++;push('bad',start,i);addDiag(errors,'余りは % ではなく math.mod(a, b) を使用してください。',start,i);continue}
+i++;push('bad',start,i);addDiag(errors,`未対応の文字「${c}」です。`,start,i)
+}return{tokens,errors}}
+function parser(tokens,errors,src){let t=tokens.filter(t=>t.type!=='comment'&&t.type!=='directive'),p=0,returnSeen=false,topStatements=0,topSemi=0,depth=0;const cur=()=>t[p],is=s=>cur()?.value===s,consume=()=>t[p++],pos=()=>cur()?.start??src.length;
+function err(message,tok=cur(),level='error'){addDiag(errors,message,tok?.start??src.length,tok?.end??src.length+1,level)}
+function expect(s,message){if(is(s)){consume();return true}err(message||`「${s}」が必要です。`);return false}
+function parseStatements(end,top=false){let statements=0,semis=0;let guards=0;while(p<t.length&&!is(end)&&guards++<5000){if(is(';')){err('余分なセミコロンがあります。',cur(),'warning');consume();semis++;continue}const prev=p;parseExpr(0);if(p===prev){err('式を読み取れません。');consume()}else statements++;
+if(is(';')){consume();semis++}else if(p<t.length&&!is(end)){err('文と文の間にはセミコロン「;」が必要です。')}
+}if(top){topStatements=statements;topSemi=semis}if(end)expect(end,`閉じ括弧「${end}」がありません。`)}
+function atom(){const tok=cur();if(!tok){err('演算子の右側などに式が必要です。');return false}const v=tok.value;if(v==='+'||v==='-'||v==='!'){consume();parseExpr(11);return true}
+if(v==='('){consume();parseExpr(0);expect(')','対応する「)」がありません。');return true}
+if(v==='{'){consume();depth++;parseStatements('}');depth--;return true}
+if(v==='return'){returnSeen=true;consume();if(!is(';')&&!is('}')&&cur())parseExpr(0);else err('return の後に戻り値の式が必要です。');return true}
+if(v==='break'||v==='continue'){consume();return true}
+if(tok.type==='str'||tok.type==='num'){consume();return true}
+if(tok.type==='ident'){consume();const vLow=v.toLowerCase();if(!knownRoots.has(vLow)&&!keywords.has(vLow))err(`「${v}」は標準的な MoLang の名前空間・キーワードではありません。`,tok,'warning');if(['geometry','material','texture'].includes(vLow))err(`${v}.* は式の用途によって利用可能なコンテキストが異なります。`,tok,'warning');return true}
+if([')',']','}',',',':',';'].includes(v)){err(`「${v}」の前に式が必要です。`);return false}
+err(`「${v}」から式を開始できません。`);consume();return false}
+function parseExpr(min){if(!atom())return;let guards=0;while(cur()&&guards++<5000){let v=cur().value;if(v==='.'&&13>=min){consume();if(cur()?.type!=='ident')err('ドット「.」の後には名前が必要です。');else consume();continue}
+if(v==='('&&13>=min){
+  const nameIndex=p-1,before=t[nameIndex],rootTok=t[nameIndex-2],dotTok=t[nameIndex-1];
+  const root=dotTok?.value==='.'?rootTok?.value?.toLowerCase():null;
+  const name=before?.value?.toLowerCase();
+  const meta=root==='math'?MATH_SIG[name]:root==='query'||root==='q'?QUERY_SIG[name]:!root?OTHER_SIG[name]:null;
+  const fnLabel=root?`${root}.${before?.value}`:before?.value;
+  consume();let args=0,empty=false,argTokens=[];
+  if(!is(')')){while(p<t.length&&!is(')')){const x=p;parseExpr(0);if(p===x){empty=true;break}argTokens.push(t.slice(x,p));args++;if(is(',')){consume();if(is(')')){err('最後のコンマの後に引数が必要です。');empty=true;}}else break;}}
+  expect(')','関数呼び出しの「)」がありません。');
+  if(root==='math'){
+    if(name==='pi')err('math.pi は定数です。() を付けずに使用してください。',before);
+    // Unknown math members are reported in validateMembers (avoid duplicates).
+  }
+  if(meta){const minArgs=meta.min??meta.args.length,maxArgs=meta.max??meta.args.length;
+    if(args<minArgs||args>maxArgs)err(`${fnLabel} は ${minArgs===maxArgs?`${minArgs} 個`:`${minArgs}～${maxArgs===Infinity?'任意':maxArgs} 個`}の引数が必要です（現在 ${args} 個）。`,before);
+    if(root==='math'){
+      // Each direct argument is inspected independently, even in nested calls.
+      for(const expression of argTokens){
+       if(expression.length===1&&expression[0].type==='str')err('math 関数の引数に文字列は使用できません。',expression[0]);
+      }
+      const nums=argTokens.map(expression=>{const a=expression.filter(x=>x.type!=='comment');
+       if(a.length===1&&a[0].type==='num')return Number(a[0].value);
+       if(a.length===2&&(a[0].value==='-'||a[0].value==='+')&&a[1].type==='num')return Number(a[0].value+a[1].value);
+       return null;});
+      const issue=(msg,idx)=>err(msg,argTokens[idx]?.[0]||before,'warning');
+      if((name==='acos'||name==='asin')&&nums[0]!==null&&Math.abs(nums[0])>1)issue(`${fnLabel} の実数引数は -1～1 の範囲です。`,0);
+      if(name==='sqrt'&&nums[0]!==null&&nums[0]<0)issue('math.sqrt に負の定数が指定されています。',0);
+      if(name==='ln'&&nums[0]!==null&&nums[0]<=0)issue('math.ln に 0 以下の定数が指定されています。',0);
+      if(name==='mod'&&nums[1]===0)issue('math.mod の除数は 0 にできません。',1);
+      if(['clamp','random','random_integer','die_roll','die_roll_integer'].includes(name)){
+       const low=name==='clamp'?1:name.startsWith('die_')?1:0,high=low+1;
+       if(nums[low]!==null&&nums[high]!==null&&nums[low]>nums[high])issue(`${fnLabel} の下限が上限より大きくなっています。`,low);
+      }
+    }
+    if((root==='query'||root==='q')&&['position','position_delta','movement_direction','camera_rotation','rotation_to_camera'].includes(name)&&argTokens[0]?.length===1&&argTokens[0][0].type==='num'){
+      const axis=Number(argTokens[0][0].value);const valid=['camera_rotation','rotation_to_camera'].includes(name)?[0,1]:[0,1,2];
+      if(!valid.includes(axis))err(`${fnLabel} の軸は ${valid.length===2?'0(x), 1(y)':'0(x), 1(y), 2(z)'} から選択します。`,argTokens[0][0],'warning');
+    }
+  }
+  if((root==='query'||root==='q')&&!QUERY_SET.has(name))err(`公式一覧にないクエリ ${fnLabel} です。ゲーム版・パック固有の可能性があります。`,before,'warning');
+  continue}
+if(v==='['&&13>=min){consume();parseExpr(0);expect(']','添字の閉じ括弧「]」がありません。');continue}
+if(v==='->'&&12>=min){consume();parseExpr(13);continue}
+if(v==='?'&&3>=min){consume();const old=p;parseExpr(0);if(p===old)err('「?」の後に式が必要です。');if(is(':')){consume();parseExpr(3)}continue}
+const bp={'=':1,'??':2,'||':4,'&&':5,'==':6,'!=':6,'<':7,'<=':7,'>':7,'>=':7,'+':8,'-':8,'*':9,'/':9}[v];if(bp===undefined||bp<min)break;const op=consume();if(op.value==='/'&&is('0'))err('0 での除算は実行時エラーになる可能性があります。',cur(),'warning');const old=p;parseExpr(v==='='?bp:bp+1);if(old===p)err(`「${v}」の後に式が必要です。`,op)} }
+parseStatements(undefined,true);validateMembers(t,errors);if(topStatements===1&&topSemi>=1&&!returnSeen)addDiag(errors,'単一の式では末尾の「;」を省略してください。',Math.max(0,src.trimEnd().length-1),src.trimEnd().length,'warning');else if((topStatements>1||topSemi>0)&&!returnSeen)addDiag(errors,'複数文では return がないと、評価結果が 0 になります。',0,1,'warning');
+if(topStatements===0&&t.length===0&&src.trim().length!==0){} else if(topStatements===0&&t.length===0)addDiag(errors,'MoLang の式が空です。',0,1,'warning');
+}
+function validateMembers(tokens,errors){
+ const existing=new Set(errors.map(e=>e.start+'|'+e.message));
+ function warn(msg,t,level='warning'){if(t&&!existing.has(t.start+'|'+msg)){addDiag(errors,msg,t.start,t.end,level);existing.add(t.start+'|'+msg)}}
+ for(let i=0;i+2<tokens.length;i++){
+  const root=tokens[i],dot=tokens[i+1],name=tokens[i+2];
+  if(root.type!=='ident'||dot.value!=='.'||name.type!=='ident')continue;
+  const ns=root.value.toLowerCase(),mem=name.value.toLowerCase(),call=tokens[i+3]?.value==='(';
+  if(ns==='math'||ns==='m'){
+   if(!MATH_SET.has(mem))warn(`math.${mem} は公式一覧にない関数・定数です。`,name,'error');
+   else if(mem!=='pi'&&!call)warn(`math.${mem} は関数です。() と引数を付けてください。`,name,'error');
+  }
+  if((ns==='query'||ns==='q')&&!QUERY_SET.has(mem))warn(`query.${mem} は公式一覧にありません。将来版や独自仕様なら確認してください。`,name);
+  if((ns==='query'||ns==='q')&&QUERY_SIG[mem]?.min>0&&!call)warn(`query.${mem} には引数が必要です。`,name,'error');
+  if((ns==='query'||ns==='q')&&!QUERY_SIG[mem]&&call&&QUERY_SET.has(mem)){
+    // Official catalog may omit an arity; do not infer an incorrect count.
+  }
+ }
+}
+// The dataset is only a dictionary of witnessed references, not a definition
+// or a guarantee of game-time availability.  The generated JSON stays offline.
+const CATALOG_STORAGE_KEY='molang-collector-catalog-v1';
+const CATALOG_KINDS=['query','variable','temp','context','math','array','this'];
+const builtInCollector=JSON.parse(document.getElementById('builtInCollectorData').textContent);
+let activeCollector=null, collectorEntries=Object.fromEntries(CATALOG_KINDS.map(k=>[k,[]]));
+function normalizeCollector(data){
+ if(!data||typeof data!=='object'||!data.index||typeof data.index!=='object')throw Error('collect_bedrock_molang.py の出力形式ではありません（index が必要です）。');
+ const entries=Object.fromEntries(CATALOG_KINDS.map(k=>[k,[]]));
+ let count=0;
+ for(const category of CATALOG_KINDS){
+  const index=data.index[category]||{};
+  if(index===null||typeof index!=='object'||Array.isArray(index))throw Error('index.'+category+' が不正です。');
+  for(const [symbol,meta] of Object.entries(index)){
+   if(count>50000)throw Error('変数が多すぎます（最大 50,000 件）。');
+   const normalized=symbol.toLowerCase();
+   if(category==='this'?normalized!=='this':!new RegExp('^'+category+'\\.[a-z_][a-z0-9_.]*$').test(normalized))continue;
+   const after=category==='this'?'this':normalized.slice(category.length+1);
+   if(!after||after.includes('..'))continue;
+   const refs=Math.max(0,Math.min(10000000,Number(meta?.references)||0));
+   const examples=[...(Array.isArray(meta?.animations)?meta.animations:[]),...(Array.isArray(meta?.animation_controllers)?meta.animation_controllers:[])].filter(x=>typeof x==='string').slice(0,3);
+   entries[category].push({name:after,refs,examples});count++;
+  }
+ }
+ if(!count)throw Error('補完に使える変数がありません。');
+ for(const kind of CATALOG_KINDS){
+  const merged=new Map();for(const e of entries[kind]){const old=merged.get(e.name);if(!old||old.refs<e.refs)merged.set(e.name,e)}
+  entries[kind]=[...merged.values()];
+ }
+ // Preserve every animation ID (even definitions with zero MoLang symbols).
+ // A globally indexed symbol is not evidence that it belongs to a particular animation.
+ const animationById=new Map(),animationItems=[];
+ const catalogLookup=Object.fromEntries(CATALOG_KINDS.map(k=>[k,new Map(entries[k].map(e=>[k==='this'?'this':k+'.'+e.name,e]))]));
+ for(const [collection,type] of [['animations','animation'],['animation_controllers','controller']]){
+  const definitions=data[collection]||{};
+  if(typeof definitions!=='object'||Array.isArray(definitions))throw Error(collection+' が不正です。');
+  for(const [id,definition] of Object.entries(definitions)){
+   if(typeof id!=='string'||!id||id.length>512||/\s/.test(id))continue;
+   const normalized=id.toLowerCase();
+   const symbols=Object.fromEntries(CATALOG_KINDS.map(k=>[k,[]]));
+   for(const kind of CATALOG_KINDS){
+    for(const symbol of (Array.isArray(definition?.symbols?.[kind])?definition.symbols[kind]:[])){
+     if(typeof symbol!=='string')continue;
+     const canonical=symbol.toLowerCase();
+     const e=catalogLookup[kind].get(canonical);
+     if(e&&!symbols[kind].some(x=>x.name===e.name))symbols[kind].push(e);
+    }
+   }
+   // Alternative shape in compacted older/newer collectors remains unsupported
+   // rather than silently treating symbols from other animations as local.
+   const number=Object.values(symbols).reduce((sum,list)=>sum+list.length,0);
+   // defined:false = named by entity/attachable files but defined in no JSON (e.g. built into the game),
+   // so its own MoLang is unknown; it is listed for completion but cannot narrow the variable candidates.
+   const defined=definition?.defined!==false;
+   const referenced=Array.isArray(definition?.referenced_by)?definition.referenced_by.length:Math.max(0,Number(definition?.referenced_count)||0);
+   const item={id,normalized,type,symbols,count:number,defined,referenced};
+   animationById.set(normalized,item);animationItems.push(item);
+   if(animationItems.length>50000)throw Error('アニメーションIDが多すぎます（最大50,000件）。');
+  }
+ }
+ animationItems.sort((a,b)=>a.id.localeCompare(b.id,'en'));
+ return {entries,counts:Object.fromEntries(CATALOG_KINDS.map(k=>[k,entries[k].length])),total:count,stats:data.statistics||{},animationById,animationItems};
+}
+function updateScopeSummary(){
+ const box=$('scopeSummary'),header=animationHeader(editor.value);
+ if(!header){box.textContent='先頭で #> を入力するとアニメーションIDを補完・指定できます。';return}
+ if(!header.valid){box.textContent='アニメーション指定は #> animation.id の形式で記述してください。';return}
+ if(!header.id){box.textContent=`#> を入力中 · ${activeCollector?.animationItems.length||0} IDから選択可能`;return}
+ const selected=selectedAnimation(editor.value);
+ box.textContent=!selected?`対象ID「${header.id}」は現在の収集JSONにありません。JSONを読み込んでください。`
+  :!selected.defined?`対象: ${selected.id} / 定義JSONのないID（エンジン内蔵など、${selected.referenced} 件のエンティティが参照）。収集データ全体から候補を表示します`
+  :`対象: ${selected.id} / 収集した識別子 ${selected.count} 種類（このIDだけで変数候補を構築）`;
+}
+// Where the active dictionary came from: 'builtin' | 'auto' (fetched next to this page) | 'manual' (user-picked file).
+// A manually loaded file is never replaced by the automatic fetch until the user resets it.
+const CATALOG_SOURCE_KEY='molang-collector-source-v1';
+const CATALOG_URL='molang_variables.json';
+let activeMeta={source:'builtin',generated:''};
+function readCatalogSource(){try{return localStorage.getItem(CATALOG_SOURCE_KEY)}catch(e){return null}}
+function writeCatalogSource(v){try{if(v)localStorage.setItem(CATALOG_SOURCE_KEY,v);else localStorage.removeItem(CATALOG_SOURCE_KEY)}catch(e){}}
+function catalogLabel(source,generated,idCount=0){
+ const day=String(generated||'').slice(0,10),when=day?`（${day} 生成）`:'';
+ if(source==='auto')return '自動取得'+when;
+ if(source==='manual')return '読み込んだJSON'+when;
+ // The small data shipped inside index.html is a sample; MoLang_Editor_Full.html embeds the whole dictionary.
+ return idCount>50?'埋め込み辞書'+when:'初期搭載・公開サンプルの一部';
+}
+function useCollector(data,{persist=false,source='manual'}={}){
+ const catalog=normalizeCollector(data);activeCollector=catalog;collectorEntries=catalog.entries;
+ const generated=typeof data.generated_at_utc==='string'?data.generated_at_utc:'';
+ activeMeta={source,generated};
+ let saved=true;
+ if(persist){
+  try{
+   // Include the complete per-animation mapping so scoped completion survives reload.
+   const compact={index:{},animations:{},animation_controllers:{},statistics:data.statistics||{},scope_note:data.scope_note||'',generated_at_utc:generated};
+   for(const kind of CATALOG_KINDS){compact.index[kind]={};for(const e of collectorEntries[kind])compact.index[kind][kind==='this'?'this':kind+'.'+e.name]={references:e.refs,animations:e.examples}}
+   for(const item of catalog.animationItems){
+    const target=item.type==='animation'?compact.animations:compact.animation_controllers;
+    target[item.id]={symbols:Object.fromEntries(CATALOG_KINDS.map(k=>[k,item.symbols[k].map(e=>k==='this'?'this':k+'.'+e.name)]))};
+    if(!item.defined){target[item.id].defined=false;target[item.id].referenced_count=item.referenced}
+   }
+   localStorage.setItem(CATALOG_STORAGE_KEY,JSON.stringify(compact));
+   writeCatalogSource(source);
+  }catch(e){saved=false;}
+ }
+ setCatalogSummary(persist&&!saved?' / このセッションのみ（保存領域不足）':'');
+ updateScopeSummary();
+ if(typeof showSuggestions==='function'&&!suggEl.hidden)showSuggestions();
+ if(editor.value)render();
+ return saved;
+}
+function setCatalogSummary(note=''){
+ if(!activeCollector)return;
+ $('catalogSummary').textContent=`${catalogLabel(activeMeta.source,activeMeta.generated,activeCollector.animationItems.length)} / ${activeCollector.total} 種類 / ${activeCollector.animationItems.length} ID${note}`;
+}
+// Fetch the dictionary published next to this page (GitHub Pages). Resolves to the parsed JSON.
+async function fetchCollector(){
+ if(location.protocol==='file:')throw Object.assign(Error('file'),{local:true});
+ const ctl=typeof AbortController==='function'?new AbortController():null,timer=ctl?setTimeout(()=>ctl.abort(),20000):0;
+ try{
+  const res=await fetch(CATALOG_URL,{cache:'no-cache',signal:ctl?.signal});
+  if(!res.ok)throw Error('HTTP '+res.status);
+  return await res.json();
+ }finally{clearTimeout(timer)}
+}
+let autoFetching=null;
+function autoFetchCollector({announce=false}={}){
+ if(autoFetching)return autoFetching;
+ autoFetching=(async()=>{
+  try{
+   const data=await fetchCollector();
+   if(activeMeta.source==='manual')return false; // the user picked their own file while we were fetching
+   const generated=typeof data.generated_at_utc==='string'?data.generated_at_utc:'';
+   if(activeMeta.source==='auto'&&generated&&generated===activeMeta.generated){setCatalogSummary(' / 最新');if(announce)showToast('自動取得データは最新です');return true}
+   useCollector(data,{persist:true,source:'auto'});
+   if(announce)showToast('公開されている最新の辞書を取得しました');
+   return true;
+  }catch(e){
+   const why=e?.local?'ローカルファイルとして開いているため自動取得しません':'自動取得できませんでした（'+String(e?.name==='AbortError'?'タイムアウト':e?.message||e).slice(0,60)+'）';
+   if(activeCollector)$('catalogSummary').textContent+=' / '+why;
+   if(announce)showToast(why);
+   return false;
+  }finally{autoFetching=null}
+ })();
+ return autoFetching;
+}
+function initializeCollector(){
+ // 1) Show something immediately: the last stored dictionary, else the small built-in one.
+ try{
+  const saved=localStorage.getItem(CATALOG_STORAGE_KEY);
+  if(saved){
+   try{const data=JSON.parse(saved);useCollector(data,{source:readCatalogSource()==='manual'?'manual':'auto'})}
+   catch(e){localStorage.removeItem(CATALOG_STORAGE_KEY);writeCatalogSource(null)}
+  }
+ }catch(e){}
+ if(!activeCollector)useCollector(builtInCollector,{source:'builtin'});
+ // 2) Refresh from the published JSON unless the user loaded their own file.
+ if(activeMeta.source!=='manual')autoFetchCollector();
+}
+function appendCollectorMatches(add,prefix){
+ const kind={q:'query',v:'variable',t:'temp',c:'context',m:'math',a:'array'}[prefix]||prefix;
+ if(!CATALOG_KINDS.includes(kind))return;
+ const header=animationHeader(editor.value),picked=selectedAnimation(editor.value);
+ // An ID without a known definition cannot narrow anything, so it behaves like no #> at all.
+ const selected=picked&&picked.defined?picked:null;
+ // Explicit #> means do not borrow non-matching variables from another animation.
+ const entries=header?.id&&!(picked&&!picked.defined)?(selected?.symbols[kind]||[]):(collectorEntries[kind]||[]);
+ for(const e of entries){
+  if(kind==='this')continue;
+  const isMath=kind==='math',isQuery=kind==='query';
+  const signature=isMath?MATH_SIG[e.name]:isQuery?QUERY_SIG[e.name]:null;
+  const count=e.refs.toLocaleString('ja-JP');
+  const where=selected?` / ${selected.id}`:(e.examples.length?` / ${e.examples.join('・')}`:'');
+  const detail=`公開アニメーションに ${count} 回出現${where}`;
+  add(e.name,isMath?'math':isQuery?'query':'variable',signature,selected?260+Math.min(65,Math.log2(e.refs+1)*11):80+Math.min(65,Math.log2(e.refs+1)*11),detail,kind.toUpperCase());
+ }
+}
+// The suggestion list uses the same catalog as the live diagnostics.
+const suggEl=$('suggestions'),sigEl=$('signatureHelp');
+let suggestions=[],suggestIndex=0,suggRange=null,suggManual=false,suggestionVisibleCount=60;
+function itemsForContext(prefix,partial,src){
+ if(prefix==='@animation'){
+  const q=partial.toLowerCase();
+  return (activeCollector?.animationItems||[]).filter(item=>item.normalized.includes(q)).sort((a,b)=>{
+   const ap=a.normalized.startsWith(q),bp=b.normalized.startsWith(q);
+   return (Number(bp)-Number(ap))||a.id.localeCompare(b.id,'en');
+  }).map(item=>({name:item.id,type:item.type,meta:null,rank:0,detail:item.defined?`収集データ内の ${item.count} 種類の識別子`:`定義JSONなし（エンジン内蔵など・${item.referenced} 件のエンティティが参照）`,kind:item.type.toUpperCase()}));
+ }
+ const out=[];const add=(name,type,meta,rank=0,detail='',kind=null)=>out.push({name,type,meta,rank,detail,kind});
+ if(prefix==='math'||prefix==='m')for(const name of MATH_SET){const meta=MATH_SIG[name];add(name,'math',meta,name==='sin'||name==='cos'||name==='clamp'||name==='lerp'?110:10,meta?meta.description:'円周率 π（関数ではなく定数）')}
+ else if(prefix==='query'||prefix==='q')for(const name of QUERY_NAMES){const meta=QUERY_SIG[name];const deprecated=['is_rising','is_scenting'].includes(name);add(name,'query',meta,preferredQueries.has(name)?130:deprecated?-40:10,deprecated?'旧版で使用されたクエリ（ゲームバージョンに注意）':QUERY_DESC[name]||meta?.description||'Minecraft のゲーム状態を取得')}
+ else if(prefix==='temp'||prefix==='t'||prefix==='variable'||prefix==='v'||prefix==='context'||prefix==='c'||prefix==='array'||prefix==='a'){
+  const normalized=new Set(prefix==='temp'||prefix==='t'?['temp','t']:prefix==='variable'||prefix==='v'?['variable','v']:prefix==='context'||prefix==='c'?['context','c']:['array','a']);
+  const toks=lastTokens.filter(x=>x.type!=='comment');
+  for(let i=0;i<toks.length-2;i++)if(normalized.has(toks[i].value.toLowerCase())&&toks[i+1].value==='.'&&toks[i+2].type==='ident' && toks[i+2].end<editor.selectionStart) add(toks[i+2].value,'variable',null,toks[i+3]?.value==='='?120:45,toks[i+3]?.value==='='?'この式で定義された変数':'この式で参照されている変数');
+  if(prefix==='context'||prefix==='c')for(const name of ['is_first_person','item_slot','owning_entity','player_offhand_arm_height','count','other'])add(name,'variable',null,30,'利用できる場所はコンテキストによって異なります');
+ }
+ else if(prefix===null){
+  for(const name of ['query.','q.','math.','temp.','t.','variable.','v.','context.','c.','return','loop','for_each','break','continue','this','true','false']){
+   add(name,'keyword',OTHER_SIG[name]||null,name==='query.'||name==='math.'?100:20,'名前空間・キーワード')
+  }
+ }
+ if(prefix!==null)appendCollectorMatches(add,prefix);
+ const query=partial.toLowerCase();
+ const filtered=out.filter(o=>o.name.toLowerCase().includes(query));
+ // Prefer exact prefix, then frequent queries, then other supported names.
+ filtered.sort((a,b)=>(b.name.toLowerCase().startsWith(query)?1000:0)+b.rank-( (a.name.toLowerCase().startsWith(query)?1000:0)+a.rank)||a.name.localeCompare(b.name));
+ const seen=new Map();for(const item of filtered){const key=item.name.toLowerCase(),before=seen.get(key);if(!before){seen.set(key,item);continue}if(item.kind&&(!before.kind||item.rank>before.rank))seen.set(key,{...item,meta:item.meta||before.meta});else if(!before.meta&&item.meta)before.meta=item.meta;}
+ return [...seen.values()].sort((a,b)=>((b.name.toLowerCase().startsWith(query)?1000:0)+b.rank)-((a.name.toLowerCase().startsWith(query)?1000:0)+a.rank)||a.name.localeCompare(b.name));
+}
+function completionContext(force=false){
+ const start=editor.selectionStart,end=editor.selectionEnd,src=editor.value;
+ if(start!==end&&!force)return null;
+ const left=src.slice(0,start);
+ // Complete the custom #> directive before rejecting comment tokens.
+ const lineStart=left.lastIndexOf('\n')+1,part=left.slice(lineStart);
+ const directive=/^[ \t]*#>[ \t]*([^\s]*)$/.exec(part);
+ if(directive&&!src.slice(0,lineStart).trim()){
+  const partial=directive[1],after=(src.slice(start).match(/^[^\s]*/)||[''])[0];
+  return {prefix:'@animation',partial,start:start-partial.length,end:start+after.length,at:start};
+ }
+ // Ignore comments/strings; these can contain misleading code-like text.
+ const cursorToken=tokenize(left).tokens.at(-1);
+ if(cursorToken&&((cursorToken.type==='comment'&&cursorToken.end===start)||(cursorToken.type==='str'&&cursorToken.end===start)))return null;
+ const match=left.match(/(?:(query|q|math|m|variable|v|temp|t|context|c|array|a)\.([A-Za-z_0-9.]*)|\b([A-Za-z_][A-Za-z_0-9]*))$/i);
+ if(!match)return null;
+ const prefix=match[1]?.toLowerCase()||null;
+ const partial=match[2]??match[3]??'';
+ if(!force&&prefix===null&&partial.length<2)return null;
+ return {prefix,partial,start:start-partial.length,end:start,at:start};
+}
+function closeSuggestions(){suggestions=[];suggRange=null;suggEl.hidden=true;editor.setAttribute('aria-expanded','false')}
+function locatePopup(){
+ if(suggEl.hidden)return;
+ const cursor=editor.selectionStart,prior=editor.value.slice(0,cursor),line=prior.split('\n').at(-1),lineNo=prior.split('\n').length-1;
+ const styles=getComputedStyle(editor),canvas=locatePopup.canvas||(locatePopup.canvas=document.createElement('canvas'));
+ const ctx=canvas.getContext('2d');ctx.font=`${styles.fontSize} ${styles.fontFamily}`;
+ const measure=ctx.measureText(line.replace(/\t/g,'  ')).width;
+ const lh=parseFloat(styles.lineHeight)||24;
+ let x=22+measure-editor.scrollLeft,y=19+lineNo*lh-editor.scrollTop+lh+3;
+ const width=editor.clientWidth;
+ if(y>editor.clientHeight-120)y=19+lineNo*lh-editor.scrollTop-156;
+ suggEl.style.left=`${Math.max(6,Math.min(x,Math.max(6,width-275)))}px`;
+ suggEl.style.top=`${Math.max(5,Math.min(y,editor.clientHeight-45))}px`;
+}
+function showSuggestions(force=false){
+ const context=completionContext(force);
+ if(!context){closeSuggestions();return}
+ const choices=itemsForContext(context.prefix,context.partial,editor.value);
+ if(!choices.length){closeSuggestions();return}
+ // Typing a complete bare keyword should not obscure the editor.
+ if(context.prefix===null&&choices.length===1&&choices[0].name===context.partial&&!force){closeSuggestions();return}
+ suggRange=context;suggestions=choices;suggestIndex=0;suggestionVisibleCount=60;suggEl.hidden=false;editor.setAttribute('aria-expanded','true');
+ renderSuggestionRows();locatePopup();
+}
+function renderSuggestionRows(){
+ suggEl.replaceChildren();
+ for(let i=0;i<Math.min(suggestionVisibleCount,suggestions.length);i++){
+  const it=suggestions[i],row=document.createElement('button');row.type='button';row.className=`suggestion ${it.type}${i===suggestIndex?' selected':''}`;row.role='option';row.setAttribute('aria-selected',String(i===suggestIndex));
+  const name=document.createElement('span');name.className='suggestion-name';name.textContent=it.name;
+  const category=document.createElement('span');category.className='suggestion-tag';category.textContent=it.type==='query'?'QUERY':it.type==='math'?'MATH':it.type==='variable'?(it.kind||'VAR'):it.type==='animation'?'ANIMATION':it.type==='controller'?'CONTROLLER':'KEYWORD';
+  const description=document.createElement('span');description.className='suggestion-detail';description.textContent=it.meta?`${it.name}(${it.meta.args.join(', ')}) — ${it.detail}`:it.detail;
+  row.append(name,category,description);row.addEventListener('mousedown',e=>e.preventDefault());row.addEventListener('click',()=>acceptSuggestion(i));suggEl.append(row)
+ }
+}
+function moveSelection(step){
+ if(suggEl.hidden)return;
+ suggestIndex=(suggestIndex+step+suggestions.length)%suggestions.length;
+ suggestionVisibleCount=Math.max(suggestionVisibleCount,suggestIndex+20);
+ renderSuggestionRows();suggEl.children[suggestIndex]?.scrollIntoView({block:'nearest'});
+}
+suggEl.addEventListener('scroll',()=>{
+ if(suggEl.hidden||suggestionVisibleCount>=suggestions.length)return;
+ if(suggEl.scrollTop+suggEl.clientHeight>=suggEl.scrollHeight-80){
+  const top=suggEl.scrollTop;suggestionVisibleCount+=60;renderSuggestionRows();suggEl.scrollTop=top;
+ }
+});
+function acceptSuggestion(index=suggestIndex){
+ const it=suggestions[index],range=suggRange;if(!it||!range)return;
+ const ahead=editor.value.slice(range.end),hasOpen=ahead.startsWith('(');
+ const addParens=range.prefix!=='@animation'&&!!it.meta&&!hasOpen;
+ const needsHeaderSpace=range.prefix==='@animation'&&editor.value[range.start-1]==='>';
+ const replacement=(needsHeaderSpace?' ':'')+it.name+(addParens?'()':'');
+ editor.setRangeText(replacement,range.start,range.end,'end');
+ const pos=range.start+it.name.length+(needsHeaderSpace?1:0)+(addParens?1:range.prefix!=='@animation'&&hasOpen?1:0);
+ editor.setSelectionRange(pos,pos);closeSuggestions();editor.dispatchEvent(new Event('input',{bubbles:true}));editor.focus();updateSignature();
+}
+function findActiveCall(){
+ const pos=editor.selectionStart;const tokens=tokenize(editor.value.slice(0,pos)).tokens.filter(t=>t.type!=='comment'&&t.type!=='directive'&&t.type!=='str');
+ const stack=[];
+ for(let i=0;i<tokens.length;i++){
+  const t=tokens[i],v=t.value;
+  if(v==='('){
+   const name=tokens[i-1],root=tokens[i-3],dot=tokens[i-2];let label=null,meta=null;
+   if(name?.type==='ident'){
+    const ns=dot?.value==='.'?root?.value?.toLowerCase():null;
+    const member=name.value.toLowerCase();
+    label=ns?`${ns}.${name.value}`:name.value;
+    meta=(ns==='math'||ns==='m')?MATH_SIG[member]:ns==='query'||ns==='q'?QUERY_SIG[member]:!ns?OTHER_SIG[member]:null;
+   }
+   stack.push({paren:'(',label,meta,active:0});
+  }else if(v==='{'||v==='[')stack.push({paren:v});
+  else if(v===')'||v==='}'||v===']')stack.pop();
+  else if(v===','&&stack.at(-1)?.paren==='(')stack.at(-1).active++;
+ }
+ return [...stack].reverse().find(s=>s.paren==='('&&s.meta)||null;
+}
+function updateSignature(){
+ const active=findActiveCall();if(!active){sigEl.hidden=true;return}
+ sigEl.hidden=false;
+ const params=active.meta.args;
+ const open=escapeHTML(active.label)+'(';
+ const result=params.map((a,i)=>i===active.active?`<span class="sig-active">${escapeHTML(a)}</span>`:escapeHTML(a)).join(', ');
+ sigEl.innerHTML=`<span class="sig-call">${open}${result})</span><span class="sig-info">引数 ${active.active+1}/${params.length} · ${escapeHTML(active.meta.description||'公式MoLang関数')}</span>`;
+}
+function refreshAssist(typed=false){updateSignature();if(typed)showSuggestions();else if(!suggEl.hidden)showSuggestions()}
+function offsetToPos(src,offset){let line=1,col=1;for(let i=0;i<Math.min(offset,src.length);i++){if(src[i]==='\n'){line++;col=1}else col++}return{line,col}}
+function escapeHTML(s){return s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function classify(t,all,i){
+  if(t.type==='directive')return 'directive';
+   if(t.type==='comment')return 'comment';
+  if(t.type==='str'||t.type==='num'||t.type==='bad')return t.type;
+  if(t.type==='op')return /^[(){}\[\],;.]$/.test(t.value)?'punct':'operator';
+  if(t.type==='ident'){
+    const v=t.value.toLowerCase(), previous=all[i-1]?.value, root=all[i-2]?.value?.toLowerCase();
+    if(v==='true'||v==='false')return 'boolean';
+    if(keywords.has(v))return 'keyword';
+    if(knownRoots.has(v)){
+      if(v==='math'||v==='m')return 'scope-math';
+      if(v==='query'||v==='q')return 'scope-query';
+      if(v==='variable'||v==='v'||v==='temp'||v==='t')return 'scope-variable';
+      return 'scope';
+    }
+    if(previous==='.'){
+      if(root==='math'||root==='m'||all[i+1]?.value==='(')return 'fn';
+      if(root==='query'||root==='q')return 'member-query';
+      if(root==='variable'||root==='v'||root==='temp'||root==='t')return 'member-variable';
+      return 'member';
+    }
+    if(all[i+1]?.value==='(')return 'fn';
+    return 'identifier';
+  }
+  return '';
+}
+function colorize(src,tokens,errors){const ranges=errors.filter(e=>e.level==='error');const spans=[];let at=0;for(let i=0;i<tokens.length;i++){const t=tokens[i];if(t.start>at)spans.push(escapeHTML(src.slice(at,t.start)));const cls=classify(t,tokens,i);const marked=ranges.some(e=>e.start<t.end&&e.end>t.start);spans.push(`<span class="${cls}${marked?' err-marker':''}">${escapeHTML(t.value)}</span>`);at=t.end}spans.push(escapeHTML(src.slice(at)));highlight.innerHTML=spans.join('')+(src.endsWith('\n')?' ':'');}
+function compile(src,tokens){
+ const usable=tokens.filter(t=>t.type!=='comment'&&t.type!=='directive');
+ let code='',prev=null;
+ for(const t of usable){
+  if(prev){
+   // Separate tokens only when concatenation would change their lexical meaning.
+   const joined=tokenize(prev.value+t.value).tokens;
+   if(joined.length!==2||joined[0].value!==prev.value||joined[1].value!==t.value||joined[0].type!==prev.type||joined[1].type!==t.type)code+=' ';
+  }
+  code+=t.value;prev=t;
+ }
+ // Protect against uncommon multi-token collisions while preserving string contents.
+ const check=tokenize(code).tokens;
+ if(check.length!==usable.length||check.some((t,i)=>t.value!==usable[i].value||t.type!==usable[i].type))code=usable.map(t=>t.value).join(' ');
+ return JSON.stringify(code);
+}
+function render(){
+ const src=editor.value.replace(/\r\n?/g,'\n'),{tokens,errors}=tokenize(src);
+ parser(tokens,errors,src);
+ const header=animationHeader(src);
+ if(header){
+  if(!header.valid)addDiag(errors,'#> の後には1つのアニメーションIDを指定してください。',header.start,header.end);
+  else if(header.id&&!selectedAnimation(src))addDiag(errors,'指定IDは収集JSONにありません。JSONの再読み込みで追加できます。',header.start,header.end,'warning');
+ }
+ lastTokens=tokens;lastErrors=errors.sort((a,b)=>a.start-b.start||(a.level==='error'?-1:1));
+ colorize(src,tokens,lastErrors);
+ gutter.textContent=src.split('\n').map((_,i)=>i+1).join('\n');
+ $('editorInfo').textContent=`${src.split('\n').length} 行 · ${src.length} 文字`;
+ hasRealCode=tokens.some(t=>t.type!=='comment'&&t.type!=='directive');
+ currentOutput=compile(src,tokens);output.textContent=currentOutput;
+ output.classList.toggle('empty',!hasRealCode);$('copy').disabled=!hasRealCode;
+ countEl.textContent=`${currentOutput.length} 文字`;
+ const nError=lastErrors.filter(e=>e.level==='error').length,nWarn=lastErrors.filter(e=>e.level==='warning').length;
+ status.className='status '+(nError?'error':nWarn?'warn':'ok');
+ statusText.textContent=nError?`${nError} 件のエラー · ${nWarn} 件の警告`:nWarn?`${nWarn} 件の警告`:'構文エラーなし';
+ diagnosticsEl.replaceChildren();
+ if(!lastErrors.length){const el=document.createElement('div');el.className='ok-note';el.textContent='構文エラーなし';diagnosticsEl.appendChild(el)}
+ else for(const d of lastErrors){
+  const el=document.createElement('button');el.type='button';el.className='diagnostic'+(d.level==='warning'?' warn':'');
+  const mark=document.createElement('span');mark.className='mark';mark.textContent=d.level==='warning'?'!':'×';
+  const content=document.createElement('span');content.textContent=d.message;
+  const where=document.createElement('span');where.className='pos';const loc=offsetToPos(src,d.start);
+  where.textContent=`行 ${loc.line}, 列 ${loc.col} · ${d.level==='warning'?'警告':'エラー'}`;
+  content.appendChild(where);el.append(mark,content);
+  el.addEventListener('click',()=>{editor.focus();editor.setSelectionRange(Math.min(d.start,src.length),Math.min(d.end,src.length));updateCaret()});diagnosticsEl.appendChild(el);
+ }
+ updateScopeSummary();updateCaret();try{localStorage.setItem('molang-editor-v1',src)}catch(e){}
+}
+function updateCaret(){let p=offsetToPos(editor.value,editor.selectionStart);$('caretInfo').textContent=`行 ${p.line} · 列 ${p.col}`}
+function insertText(text,a=editor.selectionStart,b=editor.selectionEnd){editor.setRangeText(text,a,b,'end');editor.dispatchEvent(new Event('input',{bubbles:true}));editor.focus()}
+function formatCode(src){const{tokens,errors}=tokenize(src);if(errors.some(e=>e.level==='error')){return null}let out='',indent=0,needSpace=false;const add=s=>{out+=s};const newline=()=>{out=out.replace(/[ \t]+$/g,'');if(out&&!out.endsWith('\n'))out+='\n';out+='  '.repeat(indent)};for(let i=0;i<tokens.length;i++){let t=tokens[i],v=t.value,prev=tokens[i-1]?.value||'',next=tokens[i+1]?.value||'';if(t.type==='comment'||t.type==='directive'){if(out.trim()&&!out.endsWith('\n'))newline();add(v);newline();continue}if(v==='}'){indent=Math.max(0,indent-1);newline();add('}');if(next!==';'&&next!==','&&next!==')'&&next!==':'&&next!==']')newline();continue}if(v==='{'){if(out&&!/[ \n(]$/.test(out))add(' ');add('{');indent++;newline();continue}if(v===';'){out=out.trimEnd();add(';');if(next)newline();continue}if(v===','){out=out.trimEnd();add(', ');continue}if(v==='('||v==='['||v==='.'){out=out.trimEnd();add(v);continue}if(v===')'||v===']'){out=out.trimEnd();add(v);continue}if(v==='->'){out=out.trimEnd();add('->');continue}if(['=','+','-','*','/','?','??',':','&&','||','==','!=','<','>','<=','>='].includes(v)){if(!out.endsWith(' ')&&!out.endsWith('\n'))add(' ');add(v+' ');continue}if(t.type==='ident'||t.type==='str'||t.type==='num'){if(out&&!/[\s.([>\-]$/.test(out)){if(prev!=='.'&&prev!=='->')add(' ')}add(v)}else add(v)}const final=out.replace(/[ \t]+\n/g,'\n').replace(/\n[ \t]*$/,'').trim();return final}
+function formatMultiline(){
+  const formatted=formatCode(editor.value);
+  if(formatted===null){showToast('入力内容にエラーがあるため整形できません');return}
+  editor.value=formatted;
+  editor.dispatchEvent(new Event('input',{bubbles:true}));
+  showToast('改行とインデントを整形しました');
+}
+function showToast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
+async function copyOutput(){if(!hasRealCode)return;try{await navigator.clipboard.writeText(currentOutput);showToast('1 行の MoLang をコピーしました')}catch(e){const ta=document.createElement('textarea');ta.value=currentOutput;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();showToast(ok?'1 行の MoLang をコピーしました':'自動コピーできませんでした。出力欄から手動でコピーしてください')}}
+editor.addEventListener('input',()=>{render();refreshAssist(true)});editor.addEventListener('scroll',()=>{locatePopup();highlight.scrollTop=editor.scrollTop;highlight.scrollLeft=editor.scrollLeft;gutter.style.transform=`translateY(${-editor.scrollTop}px)`});editor.addEventListener('keyup',()=>{updateCaret();updateSignature()});editor.addEventListener('click',()=>{updateCaret();refreshAssist(false)});editor.addEventListener('select',updateCaret);
+editor.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();copyOutput();return}if((e.ctrlKey||e.metaKey)&&e.code==='Space'){e.preventDefault();showSuggestions(true);return}
+if(!suggEl.hidden){
+ if(e.key==='ArrowDown'){e.preventDefault();moveSelection(1);return}
+ if(e.key==='ArrowUp'){e.preventDefault();moveSelection(-1);return}
+ if(e.key==='Escape'){e.preventDefault();closeSuggestions();return}
+ if(e.key==='Enter'&&!e.isComposing){e.preventDefault();acceptSuggestion();return}
+ if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();acceptSuggestion();return}
+}
+if(e.key==='Escape'){closeSuggestions();return}
+if(e.key==='Tab'){e.preventDefault();const a=editor.selectionStart,b=editor.selectionEnd;if(!e.shiftKey){if(a===b)insertText('  ');else{const begin=editor.value.lastIndexOf('\n',a-1)+1;const text=editor.value.slice(begin,b).replace(/^/gm,'  ');editor.setRangeText(text,begin,b,'select');editor.dispatchEvent(new Event('input',{bubbles:true}))}}else{const begin=editor.value.lastIndexOf('\n',a-1)+1;const text=editor.value.slice(begin,b);const replacement=text.replace(/^ {1,2}/gm,'');editor.setRangeText(replacement,begin,b,'select');editor.dispatchEvent(new Event('input',{bubbles:true}))}return}
+if(e.key==='Enter'&&!e.isComposing){e.preventDefault();const a=editor.selectionStart,prefix=editor.value.slice(0,a),line=prefix.slice(prefix.lastIndexOf('\n')+1),indent=(line.match(/^\s*/)||[''])[0];const open=/[({[]\s*$/.test(line);const dedent=editor.value.slice(editor.selectionEnd).startsWith('}');if(open&&dedent){insertText('\n'+indent+'  '+'\n'+indent);const at=editor.selectionStart;editor.setSelectionRange(at-indent.length-1,at-indent.length-1)}else insertText('\n'+indent+(open?'  ':''));return}
+if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.isComposing&&['(', '[', '{', "'"].includes(e.key)){
+ const a=editor.selectionStart,b=editor.selectionEnd,after=editor.value.slice(b);
+ const close={'(':')','[':']','{':'}',"'":"'"}[e.key];
+ // Ignore quote auto-pair when the cursor is inside an existing string.
+ if(e.key==="'" && tokenize(editor.value.slice(0,a)).tokens.at(-1)?.type==='str')return;
+ e.preventDefault();const selected=editor.value.slice(a,b);
+ editor.setRangeText(e.key+selected+close,a,b,'end');editor.setSelectionRange(a+1,a+1+selected.length);
+ editor.dispatchEvent(new Event('input',{bubbles:true}));return;
+}
+if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&[')',']','}',"'"].includes(e.key)&&editor.selectionStart===editor.selectionEnd&&editor.value[editor.selectionStart]===e.key){
+ e.preventDefault();const next=editor.selectionStart+1;editor.setSelectionRange(next,next);updateCaret();updateSignature();return
+}
+});
+// Import accepts only a MoLang expression, or an explicitly quoted output string.
+// Object/property-form JSON is intentionally not supported.
+const importDialog=$('importDialog');
+const importText=$('importText');
+const importError=$('importError');
+function setImportError(message){
+  importError.textContent=message;
+  importError.hidden=!message;
+}
+function openImport(){
+  importText.value='';
+  $('importCount').textContent='0 文字';
+  setImportError('');
+  importDialog.showModal();
+  importText.focus();
+}
+function closeImport(){importDialog.close()}
+function parseImport(text){
+  let value=text.replace(/\r\n?/g,'\n').trim();
+  if(!value)throw new Error('MoLang 式を入力してください。');
+  // Exclude object/property shapes while still accepting MoLang { ... } blocks.
+  if(/^\s*[\w.-]+\s*:\s*"/.test(value)||
+     /^\s*"[^"\n]+"\s*:/.test(value)||
+     /^\s*\{\s*"[^"\n]+"\s*:/.test(value)||
+     /^\s*\[\s*\{\s*"[^"\n]+"\s*:/.test(value)){
+    throw new Error('MoLang 式のみ対応しています。JSON やプロパティを除いて貼り付けてください。');
+  }
+  if(value.startsWith('"')&&value.endsWith('"')){
+    try{
+      const decoded=JSON.parse(value);
+      if(typeof decoded!=='string')throw new Error();
+      value=decoded;
+    }catch(e){
+      throw new Error('引用符付きの式を解析できません。エスケープを確認してください。');
+    }
+  }
+  if(!value.trim())throw new Error('MoLang 式を入力してください。');
+  return value;
+}
+$('importOpen').addEventListener('click',openImport);
+$('importClose').addEventListener('click',closeImport);
+$('importCancel').addEventListener('click',closeImport);
+importText.addEventListener('input',()=>{
+  $('importCount').textContent=`${importText.value.length} 文字`;
+  setImportError('');
+});
+$('importForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  try{
+    const incoming=parseImport(importText.value);
+    if(editor.value.trim()&&!confirm('編集中の MoLang をインポートした内容に置き換えますか？'))return;
+    let updated=incoming;
+    if($('importFormat').checked){
+      // Import losslessly when the formatter cannot parse this expression.
+      const formatted=formatCode(incoming);
+      if(formatted!==null){
+        // Only format when the compiled token stream is strictly identical.
+        const first=tokenize(incoming).tokens;
+        const second=tokenize(formatted).tokens;
+        if(!first.some(t=>t.type==='comment') &&
+           first.length===second.length &&
+           first.every((t,i)=>t.type===second[i].type&&t.value===second[i].value))updated=formatted;
+      }
+    }
+    editor.value=updated;
+    editor.dispatchEvent(new Event('input',{bubbles:true}));
+    editor.focus();
+    closeImport();
+    showToast('MoLang をインポートしました');
+  }catch(e){setImportError(e.message||'インポートできませんでした。')}
+});
+
+// Docs use the same definition tables as completion. Only verified QUERY_SIG values
+// are presented with parameter lists; unverified queries remain names only.
+const DOC_OPERATORS=[
+ ['+','加算。','3+2'],['-','減算、または符号反転。','3-2'],['*','乗算。','3*2'],['/','除算。','6/2'],
+ ['!','論理否定。0なら1、0以外なら0。','!query.is_moving'],
+ ['&&','AND。両辺が真のとき真。','query.is_moving&&query.is_on_ground'],
+ ['||','OR。いずれかが真のとき真。','query.is_moving||query.is_jumping'],
+ ['==','等しいかを比較。','query.health==20'],['!=','等しくないかを比較。','query.health!=0'],
+ ['<','小さい。','query.health<10'],['<=','以下。','query.health<=10'],
+ ['>','大きい。','query.health>10'],['>=','以上。','query.health>=10'],
+ ['=','変数に値を代入。','temp.x=1;'],['? :','三項条件演算子。真ならA、偽ならBを評価。','query.is_moving?1:0'],
+ ['?','二項条件演算子。真の場合だけ右辺を実行。','query.is_moving?{temp.x=1;}'],
+ ['??','未定義または無効な変数・参照に対する代替値。','variable.x??0'],
+ ['->','別エンティティの値にアクセス。参照が必要。','variable.actor->query.health'],
+ ['( )','計算の評価順序、関数呼び出し。','(1+2)*3'],
+ ['{ }','処理をまとめるスコープ。','query.is_moving?{temp.x=1;}'],
+ ['[ ]','配列のインデックスアクセス。','variable.items[0]'],
+ [';','複数文の区切り。単一の式では通常省略。','temp.x=1;return temp.x;']
+];
+const DOC_BUILTINS=[
+ ['return','複数文から値を返して処理を終了。','temp.a=2;return temp.a;'],
+ ['loop(count, expression)','count回繰り返す（最大1024回）。','loop(3,{temp.a=temp.a+1;});'],
+ ['for_each(variable, array, expression)','配列内のエンティティを順に処理。','for_each(temp.actor,variable.actors,{temp.x=temp.x+1;});'],
+ ['break','ループを途中で終了。','loop(10,{temp.x=temp.x+1;temp.x>3?{break;};});'],
+ ['continue','現在の反復を終了し次の反復へ。','loop(4,{temp.x=temp.x+1;temp.x==2?{continue;};});'],
+ ['variable.* / v.*','エンティティに保持する変数。','variable.angle=30;return variable.angle;'],
+ ['temp.* / t.*','式を評価している間の一時変数。','temp.angle=query.anim_time*30;return temp.angle;'],
+ ['context.* / c.*','コンテキストが提供する読み取り用の値。','context.some_value'],
+ ['query.* / q.*','エンティティ・アニメーションの状態を取得。','query.anim_time'],
+ ['math.*','数学関数・定数。','math.sin(query.anim_time*30)'],
+ ['this','式が書き込む先の現在の値（用途依存）。','this*2'],
+ ["'text'",'文字列はシングルクォートで指定。','query.is_name_any(\'minecraft:pig\')'],
+ ['true / false','真と偽。MoLang内部では数値として評価。','query.is_moving?true:false'],
+ ['#> animation.id','エディタ専用のアニメーション指定。コピー時には除外。','#> animation.npc.move'],
+ ['// ・ /* */','エディタ内のコメント。コピー時には除外。','// note'],
+ ['単一式','式が1つなら値をそのまま評価。','math.sin(query.anim_time*38)'],
+ ['複数文','各文を;で区切り、returnで値を返す。','temp.x=1;return temp.x*2;']
+];
+const DOC_MATH_INFO={
+ abs:'絶対値。',acos:'逆余弦（戻り値は度）。',asin:'逆正弦（戻り値は度）。',atan:'逆正接（戻り値は度）。',atan2:'yとxから角度を算出（度）。',
+ ceil:'小数点以下を切り上げ。',floor:'小数点以下を切り下げ。',round:'最も近い整数へ丸める。',trunc:'小数部分をゼロ方向へ切り捨て。',
+ sin:'正弦。引数は度。',cos:'余弦。引数は度。',sqrt:'平方根。',exp:'指数関数（eの累乗）。',ln:'自然対数。',
+ pow:'べき乗。',mod:'剰余。',min:'小さい方を返す。',max:'大きい方を返す。',
+ clamp:'値を下限・上限に収める。',lerp:'線形補間。t=0でstart、t=1でend。',lerprotate:'回転角度を短い方向に補間。',inverse_lerp:'start～endに対するvalueの割合。',
+ min_angle:'角度を[-180, 180)度の範囲に正規化。',hermite_blend:'滑らかな曲線へ変換。',sign:'符号を返す。',copy_sign:'Aの絶対値とBの符号を組み合わせる。',
+ random:'low～highの乱数。',random_integer:'low～highの整数乱数。',die_roll:'指定回数の乱数の合計。',die_roll_integer:'指定回数の整数乱数の合計。',
+ pi:'円周率π。関数ではないため()は不要。'
+};
+const DOC_MATH_EXAMPLES={
+ abs:'-2',acos:'0.5',asin:'0.5',atan:'1',atan2:'1, 1',ceil:'1.2',cos:'60',copy_sign:'-3, 2',
+ clamp:'2, 0, 1',die_roll:'2, 1, 6',die_roll_integer:'2, 1, 6',exp:'2',floor:'1.8',
+ hermite_blend:'0.5',inverse_lerp:'0, 10, 4',lerp:'0, 10, 0.5',lerprotate:'350, 10, 0.5',
+ ln:'2',max:'2, 5',min:'2, 5',min_angle:'270',mod:'7, 3',pow:'2, 3',random:'0, 1',random_integer:'1, 6',
+ round:'2.5',sign:'-3',sin:'30',sqrt:'9',trunc:'-2.8'
+};
+const DOC_QUERY_EXAMPLES={
+ anim_time:'query.anim_time',life_time:'query.life_time',delta_time:'query.delta_time',
+ state_time:'query.state_time',ground_speed:'query.ground_speed',vertical_speed:'query.vertical_speed',
+ is_moving:'query.is_moving',is_on_ground:'query.is_on_ground',is_sneaking:'query.is_sneaking',
+ is_sprinting:'query.is_sprinting',is_jumping:'query.is_jumping',is_swimming:'query.is_swimming',
+ head_x_rotation:'query.head_x_rotation(0)',head_y_rotation:'query.head_y_rotation(0)',
+ body_x_rotation:'query.body_x_rotation',body_y_rotation:'query.body_y_rotation',
+ health:'query.health',max_health:'query.max_health',
+ position:'query.position(0)',position_delta:'query.position_delta(1)',
+ distance_from_camera:'query.distance_from_camera',time_of_day:'query.time_of_day',
+ frame_alpha:'query.frame_alpha',camera_rotation:'query.camera_rotation(0)',
+ is_name_any:"query.is_name_any('Alex')",is_item_name_any:"query.is_item_name_any('slot.weapon.mainhand','minecraft:stone')",scoreboard:"query.scoreboard('objective')"
+};
+function docsMathExample(name){
+ if(name==='pi')return 'math.pi';
+ const args=name.startsWith('ease_')?'0, 1, 0.5':DOC_MATH_EXAMPLES[name];
+ return `math.${name}(${args??'0'})`;
+}
+function docsMathDescription(name,meta){
+ if(DOC_MATH_INFO[name])return DOC_MATH_INFO[name];
+ const m=/^ease_(in_out|in|out)_(back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine)$/.exec(name);
+ if(m){const mode={in:'加速',out:'減速',in_out:'加速・減速'}[m[1]];
+  return `${mode}する${m[2]}曲線の補間。format_version 1.21.120以降。`}
+ return meta?.description||'';
+}
+const docsDialog=$('docsDialog'),docsSearch=$('docsSearch'),docsScroll=$('docsScroll'),docsEntries=$('docsEntries');
+let docsTab='operators',docsPreviousFocus=null;
+function docsData(){
+ if(docsTab==='operators')return DOC_OPERATORS.map(([name,description,example])=>({name,description,example}));
+ if(docsTab==='builtins')return DOC_BUILTINS.map(([name,description,example])=>({name,description,example}));
+ if(docsTab==='math')return [...Object.entries(MATH_SIG).map(([name,meta])=>({name:`math.${name}(${meta.args.join(', ')})`,description:docsMathDescription(name,meta),example:docsMathExample(name)})),{name:'math.pi',description:DOC_MATH_INFO.pi,example:'math.pi*2'}].sort((a,b)=>a.name.localeCompare(b.name));
+ return QUERY_NAMES.map(name=>{const meta=QUERY_SIG[name],description=QUERY_DESC[name]||meta?.description||'';
+  return {name:`query.${name}${meta?'('+meta.args.join(', ')+')':''}`,description,example:DOC_QUERY_EXAMPLES[name]||''}}).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function renderDocs(){
+ const phrase=docsSearch.value.trim().toLocaleLowerCase();
+ const entries=docsData().filter(e=>(e.name+' '+e.description+' '+e.example).toLocaleLowerCase().includes(phrase));
+ $('docsSummary').textContent=`${entries.length} 件${docsTab==='query'?' · 引数表示のないクエリには、引数仕様が未確認の項目も含まれます。':''}`;
+ const frag=document.createDocumentFragment();
+ for(const e of entries){
+  const row=document.createElement('div');row.className='docs-item';
+  const name=document.createElement('code');name.className='docs-name';name.textContent=e.name;
+  const description=document.createElement('div');description.className='docs-description';
+  if(e.description)description.append(document.createTextNode(e.description));
+  if(e.example){const ex=document.createElement('code');ex.className='docs-example';ex.textContent=e.example;description.append(ex)}
+  row.append(name,description);frag.append(row);
+ }
+ if(!entries.length){const msg=document.createElement('div');msg.className='docs-empty';msg.textContent='一致する項目がありません';frag.append(msg)}
+ docsEntries.replaceChildren(frag);
+}
+function openDocs(){
+ if(docsDialog.open)return;
+ docsPreviousFocus=document.activeElement;
+ docsDialog.showModal();
+ docsSearch.value='';
+ renderDocs();
+ docsSearch.focus();
+}
+function closeDocs(){if(docsDialog.open)docsDialog.close()}
+$('docsOpen').addEventListener('click',openDocs);
+$('docsClose').addEventListener('click',closeDocs);
+docsDialog.addEventListener('click',event=>{if(event.target===docsDialog)closeDocs()});
+docsDialog.addEventListener('close',()=>{if(docsPreviousFocus?.isConnected)docsPreviousFocus.focus();docsPreviousFocus=null});
+docsSearch.addEventListener('input',renderDocs);
+for(const tab of docsDialog.querySelectorAll('[data-docs-tab]'))tab.addEventListener('click',()=>{
+ docsTab=tab.dataset.docsTab;
+ docsSearch.value='';
+ for(const t of docsDialog.querySelectorAll('[data-docs-tab]'))t.setAttribute('aria-selected',String(t===tab));
+ docsScroll.scrollTop=0;
+ renderDocs();
+});
+
+$('copy').addEventListener('click',copyOutput);$('clear').addEventListener('click',()=>{if(editor.value.trim()&&!confirm('編集中のコードを消去しますか？'))return;editor.value='';editor.dispatchEvent(new Event('input',{bubbles:true}));editor.focus()});$('format').addEventListener('click',formatMultiline);
+const catalogFile=document.getElementById('catalogFile');
+document.getElementById('catalogLoad').addEventListener('click',()=>{catalogFile.value='';catalogFile.click()});
+catalogFile.addEventListener('change',async()=>{
+ const file=catalogFile.files?.[0];if(!file)return;
+ if(file.size>32*1024*1024){showToast('JSON は 32MB 以下にしてください');return}
+ try{const data=JSON.parse(await file.text());const saved=useCollector(data,{persist:true,source:'manual'});
+  showToast(saved?'収集JSONから補完辞書を更新しました（自動取得より優先されます）':'補完辞書を更新しました（保存できませんでした）');
+ }catch(e){showToast('JSON を読み込めません: '+String(e.message||e).slice(0,90))}
+});
+// Drop a manually loaded dictionary and go back to the published one (falls back to the built-in data offline).
+document.getElementById('catalogReset').addEventListener('click',async()=>{
+ try{localStorage.removeItem(CATALOG_STORAGE_KEY)}catch(e){}
+ writeCatalogSource(null);
+ useCollector(builtInCollector,{source:'builtin'});
+ const ok=await autoFetchCollector();
+ showToast(ok?'自動取得データに戻しました':'初期データに戻しました');
+});
+initializeCollector();
+try{editor.value=localStorage.getItem('molang-editor-v1')??''}catch(e){editor.value=''}render();
+})();
+</script>
+</body>
+</html>
