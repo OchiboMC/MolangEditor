@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-14T07:10:02+00:00",
+  "generated_at_utc": "2026-11-02T11:09:11+00:00",
   "scope_note": "Direct MoLang references in publicly available animation and animation-controller definitions, plus animation / controller IDs named by entity and attachable files (entries with defined=false have no JSON definition, e.g. engine built-ins); not all private or third-party animations.",
   "canonical_namespaces": [
     "query",
@@ -14,11 +14,11 @@
     "input_files": 216,
     "files_with_definitions": 216,
     "definitions": 720,
-    "occurrences": 5887,
+    "occurrences": 5920,
     "entity_files": 363,
-    "animation_count": 549,
-    "animation_controller_count": 184,
-    "referenced_only_animation_count": 13,
+    "animation_count": 553,
+    "animation_controller_count": 183,
+    "referenced_only_animation_count": 16,
     "referenced_only_animation_controller_count": 5,
     "distinct_symbols": {
       "query": 104,
@@ -5746,9 +5746,7 @@
     "animation.cat.baby_lie_down": {
       "defined": true,
       "symbols": {
-        "query": [
-          "query.is_baby"
-        ],
+        "query": [],
         "variable": [
           "variable.liedownamount",
           "variable.liedownamounttail",
@@ -5768,14 +5766,6 @@
         {
           "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/cat.animation.json",
           "occurrences": [
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.baby_lie_down/bones/body/position/1",
-              "offsets": [
-                62
-              ]
-            },
             {
               "symbol": "variable.liedownamount",
               "category": "variable",
@@ -5855,30 +5845,6 @@
               "offsets": [
                 35
               ]
-            },
-            {
-              "symbol": "math.lerprotate",
-              "category": "math",
-              "json_pointer": "/animations/animation.cat.baby_lie_down/bones/tail2/rotation/0",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "this",
-              "category": "this",
-              "json_pointer": "/animations/animation.cat.baby_lie_down/bones/tail2/rotation/0",
-              "offsets": [
-                16
-              ]
-            },
-            {
-              "symbol": "variable.liedownamounttail",
-              "category": "variable",
-              "json_pointer": "/animations/animation.cat.baby_lie_down/bones/tail2/rotation/0",
-              "offsets": [
-                30
-              ]
             }
           ]
         }
@@ -5902,8 +5868,296 @@
         }
       ]
     },
-    "animation.cat.baby_transform": {
+    "animation.cat.baby_sneak": {
       "defined": true,
+      "symbols": {
+        "query": [
+          "query.modified_distance_moved",
+          "query.modified_move_speed"
+        ],
+        "variable": [],
+        "temp": [],
+        "context": [],
+        "math": [
+          "math.cos"
+        ],
+        "array": [],
+        "this": []
+      },
+      "definitions": [
+        {
+          "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/cat.animation.json",
+          "occurrences": [
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegl/rotation/0",
+              "offsets": [
+                57
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/backlegr/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegl/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/frontlegr/rotation/0",
+              "offsets": [
+                57
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/tail1/rotation/0",
+              "offsets": [
+                7
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/tail1/rotation/0",
+              "offsets": [
+                16
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sneak/bones/tail1/rotation/0",
+              "offsets": [
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "animation.cat.baby_sprint": {
+      "defined": true,
+      "symbols": {
+        "query": [
+          "query.modified_distance_moved",
+          "query.modified_move_speed"
+        ],
+        "variable": [],
+        "temp": [],
+        "context": [],
+        "math": [
+          "math.cos"
+        ],
+        "array": [],
+        "this": []
+      },
+      "definitions": [
+        {
+          "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/cat.animation.json",
+          "occurrences": [
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegl/rotation/0",
+              "offsets": [
+                57
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/backlegr/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegl/rotation/0",
+              "offsets": [
+                66
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/frontlegr/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/tail1/rotation/0",
+              "offsets": [
+                7
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/tail1/rotation/0",
+              "offsets": [
+                16
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_sprint/bones/tail1/rotation/0",
+              "offsets": [
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "animation.cat.baby_transform": {
+      "defined": false,
       "symbols": {
         "query": [],
         "variable": [],
@@ -5913,19 +6167,159 @@
         "array": [],
         "this": []
       },
+      "definitions": [],
+      "referenced_by": [
+        "resource_pack/entity/cat.entity.json"
+      ]
+    },
+    "animation.cat.baby_walk": {
+      "defined": true,
+      "symbols": {
+        "query": [
+          "query.modified_distance_moved",
+          "query.modified_move_speed"
+        ],
+        "variable": [],
+        "temp": [],
+        "context": [],
+        "math": [
+          "math.cos"
+        ],
+        "array": [],
+        "this": []
+      },
       "definitions": [
         {
           "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/cat.animation.json",
-          "occurrences": []
+          "occurrences": [
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegl/rotation/0",
+              "offsets": [
+                57
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/backlegr/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegl/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegl/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegl/rotation/0",
+              "offsets": [
+                65
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegr/rotation/0",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegr/rotation/0",
+              "offsets": [
+                9
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/frontlegr/rotation/0",
+              "offsets": [
+                57
+              ]
+            },
+            {
+              "symbol": "math.cos",
+              "category": "math",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/tail1/rotation/0",
+              "offsets": [
+                7
+              ]
+            },
+            {
+              "symbol": "query.modified_distance_moved",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/tail1/rotation/0",
+              "offsets": [
+                16
+              ]
+            },
+            {
+              "symbol": "query.modified_move_speed",
+              "category": "query",
+              "json_pointer": "/animations/animation.cat.baby_walk/bones/tail1/rotation/0",
+              "offsets": [
+                63
+              ]
+            }
+          ]
         }
       ]
     },
     "animation.cat.lie_down": {
       "defined": true,
       "symbols": {
-        "query": [
-          "query.is_baby"
-        ],
+        "query": [],
         "variable": [
           "variable.liedownamount",
           "variable.liedownamounttail",
@@ -5945,14 +6339,6 @@
         {
           "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/cat.animation.json",
           "occurrences": [
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.lie_down/bones/body/position/1",
-              "offsets": [
-                62
-              ]
-            },
             {
               "symbol": "variable.liedownamount",
               "category": "variable",
@@ -6083,7 +6469,6 @@
       "defined": true,
       "symbols": {
         "query": [
-          "query.is_baby",
           "query.modified_distance_moved",
           "query.modified_move_speed"
         ],
@@ -6199,38 +6584,6 @@
             {
               "symbol": "math.cos",
               "category": "math",
-              "json_pointer": "/animations/animation.cat.sneak/bones/tail1/rotation/0",
-              "offsets": [
-                23
-              ]
-            },
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sneak/bones/tail1/rotation/0",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "query.modified_distance_moved",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sneak/bones/tail1/rotation/0",
-              "offsets": [
-                32
-              ]
-            },
-            {
-              "symbol": "query.modified_move_speed",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sneak/bones/tail1/rotation/0",
-              "offsets": [
-                79
-              ]
-            },
-            {
-              "symbol": "math.cos",
-              "category": "math",
               "json_pointer": "/animations/animation.cat.sneak/bones/tail2/rotation/0",
               "offsets": [
                 7
@@ -6260,7 +6613,6 @@
       "defined": true,
       "symbols": {
         "query": [
-          "query.is_baby",
           "query.modified_distance_moved",
           "query.modified_move_speed"
         ],
@@ -6376,38 +6728,6 @@
             {
               "symbol": "math.cos",
               "category": "math",
-              "json_pointer": "/animations/animation.cat.sprint/bones/tail1/rotation/0",
-              "offsets": [
-                23
-              ]
-            },
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sprint/bones/tail1/rotation/0",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "query.modified_distance_moved",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sprint/bones/tail1/rotation/0",
-              "offsets": [
-                32
-              ]
-            },
-            {
-              "symbol": "query.modified_move_speed",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.sprint/bones/tail1/rotation/0",
-              "offsets": [
-                79
-              ]
-            },
-            {
-              "symbol": "math.cos",
-              "category": "math",
               "json_pointer": "/animations/animation.cat.sprint/bones/tail2/rotation/0",
               "offsets": [
                 7
@@ -6437,7 +6757,6 @@
       "defined": true,
       "symbols": {
         "query": [
-          "query.is_baby",
           "query.modified_distance_moved",
           "query.modified_move_speed"
         ],
@@ -6548,38 +6867,6 @@
               "json_pointer": "/animations/animation.cat.walk/bones/frontlegr/rotation/0",
               "offsets": [
                 57
-              ]
-            },
-            {
-              "symbol": "math.cos",
-              "category": "math",
-              "json_pointer": "/animations/animation.cat.walk/bones/tail1/rotation/0",
-              "offsets": [
-                23
-              ]
-            },
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.walk/bones/tail1/rotation/0",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "query.modified_distance_moved",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.walk/bones/tail1/rotation/0",
-              "offsets": [
-                32
-              ]
-            },
-            {
-              "symbol": "query.modified_move_speed",
-              "category": "query",
-              "json_pointer": "/animations/animation.cat.walk/bones/tail1/rotation/0",
-              "offsets": [
-                79
               ]
             },
             {
@@ -38721,8 +39008,63 @@
         }
       ]
     },
-    "animation.sheep.baby_transform": {
+    "animation.sheep.baby_grazing": {
       "defined": true,
+      "symbols": {
+        "query": [
+          "query.key_frame_lerp_time"
+        ],
+        "variable": [],
+        "temp": [],
+        "context": [],
+        "math": [
+          "math.sin"
+        ],
+        "array": [],
+        "this": []
+      },
+      "definitions": [
+        {
+          "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/sheep.animation.json",
+          "occurrences": [
+            {
+              "symbol": "math.sin",
+              "category": "math",
+              "json_pointer": "/animations/animation.sheep.baby_grazing/bones/head/rotation/0.2/post/0",
+              "offsets": [
+                22
+              ]
+            },
+            {
+              "symbol": "query.key_frame_lerp_time",
+              "category": "query",
+              "json_pointer": "/animations/animation.sheep.baby_grazing/bones/head/rotation/0.2/post/0",
+              "offsets": [
+                31
+              ]
+            },
+            {
+              "symbol": "math.sin",
+              "category": "math",
+              "json_pointer": "/animations/animation.sheep.baby_grazing/bones/head/rotation/1.8/pre/0",
+              "offsets": [
+                22
+              ]
+            },
+            {
+              "symbol": "query.key_frame_lerp_time",
+              "category": "query",
+              "json_pointer": "/animations/animation.sheep.baby_grazing/bones/head/rotation/1.8/pre/0",
+              "offsets": [
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "animation.sheep.baby_transform": {
+      "defined": false,
       "symbols": {
         "query": [],
         "variable": [],
@@ -38732,11 +39074,10 @@
         "array": [],
         "this": []
       },
-      "definitions": [
-        {
-          "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/sheep.animation.json",
-          "occurrences": []
-        }
+      "definitions": [],
+      "referenced_by": [
+        "resource_pack/entity/sheep.entity.json",
+        "resource_pack/entity/sheep.v1.0.entity.json"
       ]
     },
     "animation.sheep.grazing": {
@@ -38759,7 +39100,6 @@
       "defined": true,
       "symbols": {
         "query": [
-          "query.is_baby",
           "query.key_frame_lerp_time"
         ],
         "variable": [],
@@ -38775,22 +39115,6 @@
         {
           "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/sheep.animation.json",
           "occurrences": [
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.sheep.grazing.v2/bones/head/position/0.2/1",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.sheep.grazing.v2/bones/head/position/1.8/1",
-              "offsets": [
-                0
-              ]
-            },
             {
               "symbol": "math.sin",
               "category": "math",
@@ -38844,58 +39168,19 @@
       ]
     },
     "animation.sheep.setup.v2": {
-      "defined": true,
+      "defined": false,
       "symbols": {
-        "query": [
-          "query.is_baby"
-        ],
+        "query": [],
         "variable": [],
         "temp": [],
         "context": [],
         "math": [],
         "array": [],
-        "this": [
-          "this"
-        ]
+        "this": []
       },
-      "definitions": [
-        {
-          "source": "github:Mojang/bedrock-samples@main/resource_pack/animations/sheep.animation.json",
-          "occurrences": [
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.sheep.setup.v2/bones/body/rotation/0",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "this",
-              "category": "this",
-              "json_pointer": "/animations/animation.sheep.setup.v2/bones/body/rotation/0",
-              "offsets": [
-                23
-              ]
-            },
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animations/animation.sheep.setup.v2/bones/head/position/1",
-              "offsets": [
-                0
-              ]
-            },
-            {
-              "symbol": "this",
-              "category": "this",
-              "json_pointer": "/animations/animation.sheep.setup.v2/bones/head/position/1",
-              "offsets": [
-                30
-              ]
-            }
-          ]
-        }
+      "definitions": [],
+      "referenced_by": [
+        "resource_pack/entity/sheep.entity.json"
       ]
     },
     "animation.shield.wield_first_person_blocking": {
@@ -53017,35 +53302,6 @@
         }
       ]
     },
-    "controller.animation.cat.baby": {
-      "defined": true,
-      "symbols": {
-        "query": [
-          "query.is_baby"
-        ],
-        "variable": [],
-        "temp": [],
-        "context": [],
-        "math": [],
-        "array": [],
-        "this": []
-      },
-      "definitions": [
-        {
-          "source": "github:Mojang/bedrock-samples@main/resource_pack/animation_controllers/cat.animation_controllers.json",
-          "occurrences": [
-            {
-              "symbol": "query.is_baby",
-              "category": "query",
-              "json_pointer": "/animation_controllers/controller.animation.cat.baby/states/baby/animations/0/baby_transform",
-              "offsets": [
-                0
-              ]
-            }
-          ]
-        }
-      ]
-    },
     "controller.animation.cat.look_at_target": {
       "defined": true,
       "symbols": {
@@ -53180,6 +53436,22 @@
               ]
             },
             {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sneaking/animations/0/sneak",
+              "offsets": [
+                1
+              ]
+            },
+            {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sneaking/animations/1/baby_sneak",
+              "offsets": [
+                0
+              ]
+            },
+            {
               "symbol": "variable.state",
               "category": "variable",
               "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sneaking/transitions/0/sprinting",
@@ -53212,6 +53484,22 @@
               ]
             },
             {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sprinting/animations/0/sprint",
+              "offsets": [
+                1
+              ]
+            },
+            {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sprinting/animations/1/baby_sprint",
+              "offsets": [
+                0
+              ]
+            },
+            {
               "symbol": "variable.state",
               "category": "variable",
               "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sprinting/transitions/0/sneaking",
@@ -53239,6 +53527,22 @@
               "symbol": "variable.state",
               "category": "variable",
               "json_pointer": "/animation_controllers/controller.animation.cat.move/states/sprinting/transitions/3/lie_down",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/walking/animations/0/walk",
+              "offsets": [
+                1
+              ]
+            },
+            {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.cat.move/states/walking/animations/1/baby_walk",
               "offsets": [
                 0
               ]
@@ -58989,7 +59293,8 @@
       "defined": true,
       "symbols": {
         "query": [
-          "query.all_animations_finished",
+          "query.any_animation_finished",
+          "query.is_baby",
           "query.is_grazing",
           "query.modified_move_speed"
         ],
@@ -59021,7 +59326,23 @@
               ]
             },
             {
-              "symbol": "query.all_animations_finished",
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.sheep.move/states/grazing/animations/0/grazing",
+              "offsets": [
+                1
+              ]
+            },
+            {
+              "symbol": "query.is_baby",
+              "category": "query",
+              "json_pointer": "/animation_controllers/controller.animation.sheep.move/states/grazing/animations/1/baby_grazing",
+              "offsets": [
+                0
+              ]
+            },
+            {
+              "symbol": "query.any_animation_finished",
               "category": "query",
               "json_pointer": "/animation_controllers/controller.animation.sheep.move/states/grazing/transitions/0/default",
               "offsets": [
@@ -61307,10 +61628,9 @@
           "controller.animation.creaking.sway",
           "controller.animation.persona.blink",
           "controller.animation.rabbit.general.v2",
-          "controller.animation.sheep.move",
           "controller.animation.spear.hit"
         ],
-        "references": 16
+        "references": 15
       },
       "query.anim_time": {
         "animations": [
@@ -61345,9 +61665,10 @@
         "animations": [],
         "animation_controllers": [
           "controller.animation.armadillo.roll_up",
-          "controller.animation.camel.general"
+          "controller.animation.camel.general",
+          "controller.animation.sheep.move"
         ],
-        "references": 6
+        "references": 7
       },
       "query.blocking": {
         "animations": [],
@@ -61560,14 +61881,7 @@
       },
       "query.is_baby": {
         "animations": [
-          "animation.cat.baby_lie_down",
-          "animation.cat.lie_down",
-          "animation.cat.sneak",
-          "animation.cat.sprint",
-          "animation.cat.walk",
           "animation.mooshroom.baby_transform",
-          "animation.sheep.grazing.v2",
-          "animation.sheep.setup.v2",
           "animation.squid.move",
           "animation.villager.get_in_bed",
           "animation.zombie.swimming"
@@ -61578,7 +61892,6 @@
           "controller.animation.axolotl.move.v2",
           "controller.animation.camel.general",
           "controller.animation.camel.idle",
-          "controller.animation.cat.baby",
           "controller.animation.cat.move",
           "controller.animation.drowned.attack.rotations",
           "controller.animation.fox.move",
@@ -61592,6 +61905,7 @@
           "controller.animation.polar_bear.move",
           "controller.animation.rabbit.baby",
           "controller.animation.rabbit.general.v2",
+          "controller.animation.sheep.move",
           "controller.animation.sniffer.baby",
           "controller.animation.turtle.move",
           "controller.animation.villager.baby",
@@ -61602,7 +61916,7 @@
           "controller.animation.wolf.sitting",
           "controller.animation.zombie.attack_bare_hand"
         ],
-        "references": 109
+        "references": 107
       },
       "query.is_carrying_block": {
         "animations": [],
@@ -61990,10 +62304,11 @@
       },
       "query.key_frame_lerp_time": {
         "animations": [
+          "animation.sheep.baby_grazing",
           "animation.sheep.grazing.v2"
         ],
         "animation_controllers": [],
-        "references": 2
+        "references": 4
       },
       "query.lie_amount": {
         "animations": [
@@ -62099,6 +62414,9 @@
           "animation.agent.move",
           "animation.axolotl.walk_floor",
           "animation.axolotl.walk_floor_underwater",
+          "animation.cat.baby_sneak",
+          "animation.cat.baby_sprint",
+          "animation.cat.baby_walk",
           "animation.cat.sneak",
           "animation.cat.sprint",
           "animation.cat.walk",
@@ -62140,13 +62458,16 @@
           "animation.wolf.leg_default"
         ],
         "animation_controllers": [],
-        "references": 153
+        "references": 165
       },
       "query.modified_move_speed": {
         "animations": [
           "animation.agent.move",
           "animation.camel.baby_walk",
           "animation.camel.walk",
+          "animation.cat.baby_sneak",
+          "animation.cat.baby_sprint",
+          "animation.cat.baby_walk",
           "animation.cat.sneak",
           "animation.cat.sprint",
           "animation.cat.walk",
@@ -62198,7 +62519,7 @@
           "controller.animation.villager.move",
           "controller.animation.villager_v2.move"
         ],
-        "references": 153
+        "references": 165
       },
       "query.movement_direction": {
         "animations": [
@@ -63480,7 +63801,7 @@
           "animation.cat.lie_down"
         ],
         "animation_controllers": [],
-        "references": 4
+        "references": 3
       },
       "variable.lieonplayer": {
         "animations": [
@@ -65175,6 +65496,9 @@
         "animations": [
           "animation.bee.fly.bobbing",
           "animation.blaze.move",
+          "animation.cat.baby_sneak",
+          "animation.cat.baby_sprint",
+          "animation.cat.baby_walk",
           "animation.cat.sneak",
           "animation.cat.sprint",
           "animation.cat.walk",
@@ -65264,7 +65588,7 @@
         "animation_controllers": [
           "controller.animation.fox.move"
         ],
-        "references": 316
+        "references": 328
       },
       "math.lerp": {
         "animations": [
@@ -65297,7 +65621,7 @@
           "animation.cat.lie_down"
         ],
         "animation_controllers": [],
-        "references": 8
+        "references": 7
       },
       "math.max": {
         "animations": [
@@ -65444,6 +65768,7 @@
           "animation.ravager.biting",
           "animation.ravager.roaring",
           "animation.ravager.stunned",
+          "animation.sheep.baby_grazing",
           "animation.sheep.grazing.v2",
           "animation.shulker.move",
           "animation.shulker.move.v1.0",
@@ -65467,7 +65792,7 @@
           "animation.zombie.swimming"
         ],
         "animation_controllers": [],
-        "references": 289
+        "references": 291
       },
       "math.sqrt": {
         "animations": [
@@ -65605,7 +65930,6 @@
           "animation.player.sneaking.inverted",
           "animation.polarbear.move",
           "animation.rabbit.move",
-          "animation.sheep.setup.v2",
           "animation.skeleton.attack",
           "animation.skeleton.attack.v1.0",
           "animation.snowgolem.arms",
@@ -65642,7 +65966,7 @@
           "animation.zombie.swimming"
         ],
         "animation_controllers": [],
-        "references": 1347
+        "references": 1344
       }
     }
   },
@@ -65652,7 +65976,7 @@
     "github": {
       "repository": "Mojang/bedrock-samples",
       "ref": "main",
-      "tree_sha": "46ba6ea985fb5a92d79a9419198f10dda14c199d"
+      "tree_sha": "15701fa9c13923f12662984c32c124327e40e3d3"
     },
     "local": []
   }
